@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <meta http-equiv="Cache-Control" content="max-age=86400" /> -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <title>易乐思课堂</title>
+    <link rel="stylesheet" href="./static/style/course.css">
+</head>
+
+<body>
+
+    <div class="container" id="course">
+        <section class="connection" id="connection" style="display: none;">
+            <p class="text text-1">网页版易乐思课堂链接成功</p>
+            <p class="text text-2">当您点击“上课”时，即可同步显示手机屏幕!</p>
+        </section>
+
+        <section class="loading" id="loading" style="display: none;">
+            <i class="icon"></i>
+            <p class="text">正在同步显示手机屏幕，请稍候</p>
+        </section>
+
+        <section class="screen" id="screen" style="display: none;">
+            <img src="/static/images/1.jpg" class="course-img" id="courseImg" style="display: none">
+
+            <!-- <div class="state-before">答题(多选)</div>
+            <div class="state-doing">
+                <p class="text text-time">答题时间：00:03:22</p>
+                <p class="text text-number">答题人数：47人</p>
+                <div class="button-stop">结束答题</div>
+            </div>
+            <div class="state-after">
+                <div class="button-detail">查看结果</div>
+                <p class="text">重新答题</p>
+            </div> -->
+
+            <!-- <div class="chart">
+                <div class="chart-box flex-h">
+                    <div class="time">答题时间：00:03:22</div>
+
+                    <div class="titles">
+                        <p class="titles-item">A</p>
+                        <p class="titles-item">B</p>
+                        <p class="titles-item">答对</p>
+                        <p class="titles-item">未答题</p>
+                    </div>
+
+                    <div class="options flex-a-i">
+                        <div class="options-item flex-h">
+                            <p class="color-line" style="width: 90%; background: #38A0FF;"></p>
+                            <p class="text">40人</p>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- <div class="student">
+                <div class="student-box">
+                    <p>李进</p>
+                </div>
+            </div> -->
+        </section>
+    </div>
+
+    <div class="toolbar" id="toolbar">
+        <a href="javascript:void(0);" class="button-refresh" id="button-refresh"></a>
+        <a href="javascript:void(0);" class="button-fullscreen" id="button-fullscreen"></a>
+    </div>
+
+    <script src="./static/script/jquery.2.0.0.min.js"></script>
+    <script src="./static/script/util.js"></script>
+    <script src="./static/script/course.js"></script>
+</body>
+</html>

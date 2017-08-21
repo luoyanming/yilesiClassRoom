@@ -1,0 +1,236 @@
+@import "base/common";
+
+// ==============================================
+// course
+// ==============================================
+.container{
+    @include position(absolute, 3, 0, 0, 42px, 0);
+    background: #000;
+
+    .connection{
+        @include position(absolute, 4, 50%, 0, none, 0);
+        margin-top: -128px;
+        padding-top: 195px;
+        @include backgroundImage('../images/course-connect.png', no-repeat, center, top, 378px, 161px);
+
+
+
+        .text{
+            font-size: 18px;
+            line-height: 1.5;
+            color: #FFF;
+            text-align: center;
+
+            &.text-2{
+                margin-top: 7px;
+            }
+        }
+    }
+
+    .loading{
+        @include position(absolute, 4, 50%, 0, none, 0);
+        margin-top: -55px;
+        overflow: hidden;
+
+        .icon{
+            display: block;
+            margin: 0 auto;
+            width: 64px;
+            height: 64px;
+            @include backgroundImage('../images/course-loading.png', no-repeat, center, center, 100%, 100%);
+            -webkit-animation: rotate 1s linear infinite;
+               -moz-animation: rotate 1s linear infinite;
+                -ms-animation: rotate 1s linear infinite;
+                 -o-animation: rotate 1s linear infinite;
+                    animation: rotate 1s linear infinite;
+        }
+
+        .text{
+            margin-top: 20px;
+            font-size: 18px;
+            color: #888;
+            line-height: 1.5;
+            text-align: center;
+        }
+    }
+
+    .screen{
+        @include position(absolute, 4, 0, 0, 0, 0);
+
+        .course-img{
+            @include position(absolute, 10, 50%, none, none, 50%);
+            @include translate(-50%, -50%, 0);
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .state-before{
+            @include position(absolute, 20, none, 12px, 22px, none);
+            width: 150px;
+            height: 42px;
+            font-size: 18px;
+            line-height: 42px;
+            color: #FFF;
+            text-align: center;
+            background: #1EC51D;
+            border-radius: 4px;
+        }
+
+        .state-doing{
+            @include position(absolute, 20, none, 0, 0, none);
+            width: 174px;
+            height: 130px;
+            padding: 11px 12px 0 12px;
+            background: rgba(0, 0, 0, .7);
+
+            .text{
+                font-size: 14px;
+                color: #FFF;
+                line-height: 1.5;
+
+                &.text-number{
+                    margin-top: 5px;
+                }
+            }
+
+            .button-stop{
+                width: 150px;
+                height: 42px;
+                margin-top: 10px;
+                font-size: 18px;
+                line-height: 42px;
+                color: #FFF;
+                text-align: center;
+                background: #D71616;
+                border-radius: 4px;
+            }
+        }
+
+        .state-after{
+            @include position(absolute, 20, none, 0, 0, none);
+            width: 174px;
+            height: 130px;
+            padding: 32px 12px 0 12px;
+            background: rgba(0, 0, 0, .7);
+
+            .button-detail{
+                width: 150px;
+                height: 42px;
+                font-size: 18px;
+                line-height: 42px;
+                color: #1EC51D;
+                text-align: center;
+                background: #FFF;
+                border-radius: 4px;
+            }
+
+            .text{
+                font-size: 14px;
+                color: #1EC51D;
+                line-height: 1.5;
+                margin-top: 15px;
+                text-align: center;
+            }
+        }
+
+        .chart{
+            @include position(absolute, 30, 0, 0, 0, 0);
+            background: rgba(0, 0, 0, .7);
+
+            .chart-box{
+                @include position(absolute, 31, 50%, none, none, 50%);
+                width: 700px;
+                @include translate(-50%, -50%, 0);
+
+                .time{
+                    @include position(absolute, 32, -35px, 0, none, 70px);
+                    font-size: 18px;
+                    line-height: 1.5;
+                    color: #FFF;
+                    text-align: center;
+                }
+
+                .titles{
+                    padding: 10px 20px;
+                    border-right: 1px solid #979797;
+
+                    .titles-item{
+                        font-size: 18px;
+                        color: #FFF;
+                        line-height: 60px;
+                        text-align: right;
+                        white-space: nowrap;
+                    }
+                }
+
+                .options{
+                    padding: 10px 0;
+
+                    .options-item{
+                        padding: 10px 0;
+
+                        .color-line{
+                            height: 40px;
+                        }
+
+                        .text{
+                            margin-left: 10px;
+                            font-size: 14px;
+                            color: #FFF;
+                            line-height: 40px;
+                        }
+                    }
+                }
+            }
+        }
+
+        .student{
+            @include position(absolute, 31, 0, 0, 0, 0);
+            background: rgba(0, 0, 0, .7);
+
+            .student-box{
+                @include position(absolute, 32, 50%, none, none, 50%);
+                width: 700px;
+                @include translate(-50%, -50%, 0);
+
+                p{
+                    display: inline-block;
+                    width: 100px;
+                    height: 40px;
+                    margin: 10px 20px;
+                    color: #000;
+                    line-height: 40px;
+                    text-align: center;
+                    background: #FFF;
+                    border-radius: 10px;
+                }
+            }
+        }
+    }
+}
+
+.toolbar{
+    @include position(absolute, 3, none, 0, 0, 0);
+    height: 42px;
+    background: #23272c;
+    font-size: 0;
+    text-align: center;
+    overflow: hidden;
+
+    .button-refresh,
+    .button-fullscreen{
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        margin-top: 6px;
+    }
+
+    .button-refresh{
+        @include backgroundImage('../images/course-refresh.png', no-repeat, center, center, 100%, 100%);
+    }
+
+    .button-fullscreen{
+        margin-left: 60px;
+        @include backgroundImage('../images/course-fullscreen.png', no-repeat, center, center, 100%, 100%);
+    }
+}
