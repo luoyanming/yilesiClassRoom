@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <meta http-equiv="Cache-Control" content="max-age=86400" /> -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <title>易乐思课堂</title>
+    <link rel="stylesheet" href="./static/style/lesson.css">
+</head>
+
+<body>
+
+    <div class="container" id="lesson">
+        <header class="header">
+            <p class="title">易乐思·轻课堂</p>
+            <div class="info">
+                <div class="avatar"><img src="" id="avatar"></div>
+                <p class="name" id="nickname"></p>
+                <span class="seprate">|</span>
+                <a href="./index.html" class="button-logout">退出</a>
+            </div>
+        </header>
+
+        <main class="main">
+            <section class="onlyone" style="display: none;">
+                <div class="center-wrap">
+                    <div class="upload-wrap">
+                        <div class="tips"></div>
+                        <div class="text">新建课程</div>
+                        <div class="file-wrap">
+                            <!-- <form id="form-0"><input type="file" name="file" class="input-file"></form> -->
+                        </div>
+                    </div>
+                    <p class="desc">点击“新建课程”或将文件拖入“新建课程”内，会自动为您创建一个新的课程。<br />目前只支持 .ppt 和 .pptx 格式的文件。</p>
+                </div>
+            </section>
+
+            <section class="list" style="display: none;">
+                <ul>
+                    <!-- <li class="list-item">
+                        <div class="upload-wrap">
+                            <div class="file-wrap">
+                                <form id="form-0"><input type="file" name="file" class="input-file"></form>
+                            </div>
+                        </div>
+                        <p class="title">未命名课程</p>
+                    </li>
+                    <li class="list-item">
+                        <div class="upload-wrap">
+                            <img src="./static/images/1.jpg" class="thumb">
+                            <div class="mask-plus"></div>
+                            <div class="file-wrap">
+                                <form id="form-1"><input type="file" name="file" class="input-file"></form>
+                            </div>
+                        </div>
+                        <p class="title">未命名课程</p>
+                    </li> -->
+                </ul>
+            </section>
+
+            <section class="mask" style="display: none;">
+                <div class="content">
+                    <div class="progress">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+
+                    <div class="text">正在上传：<span id="progressText">0%</span></div>
+                </div>
+            </section>
+
+            <div class="update" style="display: none;">
+                <div class="content">
+                    <p class="title">您的课程已更新。</p>
+                    <p class="text">您之前在 手机版轻课堂 上对您的课程进行了编辑。现在正在为您更新最新的课程，请稍后！</p>
+                    <p class="btn-box"><a href="javascript:void(0);" class="btn-sure">知道了</a></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="loading"></div>
+
+    <script src="./static/script/jquery.2.0.0.min.js"></script>
+    <script src="./static/script/util.js"></script>
+    <script src="./static/script/lesson.js"></script>
+</body>
+</html>

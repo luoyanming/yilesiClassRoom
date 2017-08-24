@@ -207,6 +207,143 @@
             }
         }
     }
+
+    .bindcard{
+        @include position(fixed, 10, 0, 0, 42px, 0);
+        background: rgba(0, 0, 0, .75);
+        opacity: 0;
+        @include transition(all, .3s, ease-in-out, 0);
+
+        &.bindcard-active{
+            opacity: 1;
+            @include transition(all, .3s, ease-in-out, 0);
+        }
+
+        .bindcard-box{
+            @include position(absolute, 11, 50%, none, none, 50%);
+            @include translate(-50%, -50%, 0);
+            width: 750px;
+            background: rgba(239, 239, 244, 1);
+
+            .card-header{
+                padding: 60px 0 40px 0;
+                font-size: 0;
+                text-align: center;
+
+                .card-item{
+                    display: inline-block;
+                    width: 120px;
+                    height: 180px;
+                    margin: 0 20px;
+                    background: #FFFFFF;
+                    border: 1px solid #CDCDD2;
+                    border-radius: 12px;
+                    font-size: 72px;
+                    color: #000000;
+                    line-height: 180px;
+                    text-align: center;
+                }
+            }
+
+            .card-tips{
+                font-size: 34px;
+                color: #7F8388;
+                text-align: center;
+                line-height: 1;
+            }
+
+            .card-main{
+                padding: 40px 0 10px 0;
+                font-size: 0;
+                text-align: center;
+
+                .card-item{
+                    display: inline-block;
+                    width: 150px;
+                    height: 150px;
+                    margin: 0 28px 30px 28px;
+                    background: #FFFFFF;
+                    border: 1px solid #CDCDD2;
+                    border-radius: 50%;
+                    font-size: 48px;
+                    color: #000000;
+                    line-height: 150px;
+                    text-align: center;
+
+                    &.selected{
+                        background: #38A0FF;
+                        color: #fff;
+                    }
+
+                    &.disable{
+                        background: #E1E1E5;
+                    }
+
+                    &:last-child{
+                        background: #1EC51D;
+                        color: #fff;
+                    }
+                }
+            }
+
+            .card-info{
+                margin-bottom: 40px;
+                font-size: 26px;
+                color: #7F8388;
+                line-height: 1;
+                text-align: center;
+
+                span{
+                    color: rgba(198, 57, 48, 1);
+                }
+
+                a{
+                    color: #38A0FF;
+                    cursor: default;
+                }
+            }
+        }
+    }
+
+    .bindlist{
+        @include position(fixed, 10, 0, 0, 42px, 0);
+        background: rgba(0, 0, 0, .75);
+
+        .bindlist-box{
+            @include position(absolute, 11, 0, none, 0, 50%);
+            @include translate(-50%, 0, 0);
+            width: 750px;
+            background: rgba(239, 239, 244, 1);
+
+            ul{
+                padding: 30px 25px;
+                background: #fff;
+                font-size: 0;
+                text-align: left;
+
+                .list-item{
+                    display: inline-block;
+                    margin: 10px;
+                    width: 120px;
+                    height: 48px;
+                    font-size: 22px;
+                    line-height: 48px;
+                    color: #454545;
+                    border: 1px solid #CDCDD2;
+                    border-radius: 12px;
+                    text-align: center;
+                    overflow: hidden;
+                }
+
+                .no-data{
+                    font-size: 22px;
+                    color: #454545;
+                    line-height: 3;
+                    text-align: center;
+                }
+            }
+        }
+    }
 }
 
 .toolbar{

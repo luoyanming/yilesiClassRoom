@@ -21,8 +21,6 @@ var INDEX = {
 
         that.sid = localStorage.getItem('sid');
         that.token = localStorage.getItem('token');
-        // that.sid = '1fbb468089a6c86c';
-        // that.token = '7f41d036437b3a51f0b6c10459b8a418';
         if(that.sid && that.token) {
             that.webSocketInit();
         } else {
@@ -41,6 +39,8 @@ var INDEX = {
         that.$toolbar = $('#toolbar');
         that.$buttonRefresh = $('#button-refresh');
         that.$buttonFullscreen = $('#button-fullscreen');
+        that.$bindcard = $('#bindcard');
+        that.$bindlist = $('#bindlist');
 
         that.$buttonRefresh.unbind('click');
         that.$buttonRefresh.on('click', that.buttonRefreshBind);
@@ -100,13 +100,6 @@ var INDEX = {
         //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口。
         window.onbeforeunload = function () {
             ws.close();
-
-            localStorage.setItem('sid', '');
-            localStorage.setItem('token', '');
-
-            localStorage.removeItem('picUrl');
-            localStorage.removeItem('answerType');
-            localStorage.removeItem('isAnswer');
         }
     },
 
@@ -150,6 +143,11 @@ var INDEX = {
         } else if(res.code == 10006) {
             // 收到服务端返回的心跳包回复，心跳计数-1
             that.heartCount -= 1;
+        } else if(res.code == 10007) {
+            // 账号在其它地方登陆，当前页面被踢下线
+            ws.close();
+            alert('您的账号已在其它地点登录，将被强制下线！');
+            location.href = './index.html'
         } else if(res.code == 80002) {
             // 结束录制
             localStorage.removeItem('picUrl');
@@ -201,11 +199,6 @@ var INDEX = {
             that.$screen.append(str);
         } else if(res.code == 80006) {
             // 显示答案
-            // if(that.$screen.find('.chart').length > 0) {
-            //     that.$screen.find('.chart').fadeIn(200);
-            //     return false;
-            // }
-
             var info = res.data.answerInfo,
                 titlesArr = [],
                 optionsArr = [];
@@ -293,22 +286,7 @@ var INDEX = {
             that.$screen.append(str);
         } else if(res.code == 80008) {
             // 收到服务端的答题学生人数
-
-            if(res.data.answerNum == -1){
-                return false;
-            } else {
-                that.$screen.find('.state-doing .text-number').html('答题人数：'+ res.data.answerNum +'人');
-                that.sendMsg({
-                    "bizType": 10004,
-                    "sid": that.sid,
-                    "token": that.token,
-                    "time": (new Date()).getTime(),
-                    "data": {
-                        'opType': 80008,
-                        'classId': res.data.classId
-                    }
-                });
-            }
+            that.$screen.find('.state-doing .text-number').html('答题人数：'+ res.data.answerNum +'人');
         } else if(res.code == 80009) {
             // 关闭答题结果
             that.$screen.find('.chart').hide();
@@ -321,6 +299,67 @@ var INDEX = {
             // 关闭同屏
             ws.close();
             location.href = './index.html'
+        } else if(res.code == 80013) {
+            // 显示建班页面
+            var cardList = ['A', 'B', 'C', 'D', 'E', 'F', '', '1', '0'],
+                cardSelectList = res.data.code.split(''),
+                cardHeaderItem = that.$bindcard.find('.card-header .card-item'),
+                cardMainItem = that.$bindcard.find('.card-main .card-item');
+
+            cardMainItem.removeClass('selected');
+            for (var i = 0; i < cardSelectList.length; i++) {
+                if(cardSelectList[i] == '0') {
+                    cardHeaderItem.eq(i).html('X');
+                } else if(cardSelectList[i] == '1') {
+                    cardHeaderItem.eq(i).html('&radic;');
+                } else {
+                    cardHeaderItem.eq(i).html(cardSelectList[i]);
+                }
+
+                var index = cardList.indexOf(cardSelectList[i]);
+                cardMainItem.eq(index).addClass('selected');
+            }
+            if(res.data.stuNum == 0) {
+                that.$bindcard.find('.card-info span').html('<a href="javascript:void(0);">查看学生名单</a>');
+            } else {
+                that.$bindcard.find('.card-info span').html('已有<span>'+ res.data.stuNum +'</span>名学生绑定成功！<a href="javascript:void(0);">查看学生名单</a>');
+            }
+
+            that.$bindcard.show();
+
+            var cardH = that.$bindcard.height(),
+                cardBoxH = that.$bindcard.find('.bindcard-box').height(),
+                scale = cardH/cardBoxH;
+
+            that.$bindcard.find('.bindcard-box').css({
+                '-webkit-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
+                   '-moz-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
+                    '-ms-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
+                        'transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')'
+            });
+
+            that.$connection.hide();
+            that.$bindlist.hide();
+            that.$bindcard.addClass('bindcard-active');
+        } else if(res.code == 80014) {
+            // 建班查看学生列表
+            if(res.data.studentList && res.data.studentList.length > 0) {
+                var temp = '';
+                for(var i = 0; i < res.data.studentList.length; i++) {
+                    temp += '<li class="list-item">'+ res.data.studentList[i] +'</li>';
+                }
+
+                that.$bindlist.find('ul').html(temp);
+            } else {
+                that.$bindlist.find('ul').html('<li class="no-data">暂无绑定的学生</li>');
+            }
+
+            that.$bindcard.removeClass('bindcard-active').hide();
+            that.$bindlist.fadeIn(300);
+        } else if(res.code == 80015) {
+            that.$bindcard.removeClass('bindcard-active').hide();
+            that.$bindlist.hide();
+            that.$connection.fadeIn(300);
         }
     },
 
@@ -333,7 +372,7 @@ var INDEX = {
     showImage: function(picurl, answerType, isAnswer, piclist) {
         localStorage.setItem('picUrl', picurl);
         localStorage.setItem('answerType', answerType);
-        localStorage.setItem('isAnswer', isAnswer);
+        localStorage.setItem('isAnswer', isAnswer ? 'true' : '');
 
         that.$connection.hide();
         that.$screen.hide();
@@ -346,8 +385,9 @@ var INDEX = {
         that.$screen.find('.state-chart').remove();
         that.$screen.find('.state-student').remove();
 
+        answerType = parseInt(answerType)
         if(answerType != 0) {
-            if(isAnswer) {
+            if(localStorage.getItem('isAnswer')) {
                 var str = '';
                 str += '<div class="state-after">';
                 str += '<div class="button-detail">查看结果</div>';

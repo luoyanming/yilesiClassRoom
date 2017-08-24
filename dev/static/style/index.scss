@@ -18,13 +18,34 @@
 
     .qrCode-box{
         @include position(absolute, 3, 50%, none, none, 50%);
-        margin: -270px 0 0 -190px;
-        width: 380px;
+        margin: -270px 0 0 -210px;
+        width: 420px;
         height: 540px;
         background: #FFF;
         border-radius: 5px;
         overflow: hidden;
         @include boxShadow(0, 0, 10px, rgba(0,0,0,.1));
+
+        .button-toggle{
+            @include position(absolute, 10, 0, 0, none, none);
+            width: 100px;
+            height: 100px;
+            // opacity: 0;
+            // @include transition(all, .2s, ease-in-out, 0);
+
+            &.button-class{
+                @include backgroundImage('../images/icon-button-class.png', no-repeat, center, center, 100%, 100%);
+            }
+
+            &.button-lesson{
+                @include backgroundImage('../images/icon-button-lesson.png', no-repeat, center, center, 100%, 100%);
+            }
+
+            // &.button-toggle-active{
+            //     opacity: 1;
+            //     @include transition(all, .3s, ease-in-out, 0);
+            // }
+        }
 
         .wrap{
             position: relative;
@@ -99,8 +120,42 @@
             }
 
             &.text-light{
-                margin-top: 23px;
                 color: #888;
+            }
+        }
+
+        .text-box{
+            position: relative;
+            margin-top: 23px;
+
+            .text-light{
+                @include position(absolute, 3, 0, 0, none, 0);
+            }
+
+            #text-class{
+                opacity: 1;
+                @include translate(0, 0, 0);
+                @include transitionTransform(all, .3s, ease-in-out, 0);
+            }
+
+            #text-lesson{
+                opacity: 0;
+                @include translate(0, 100%, 0);
+                @include transitionTransform(all, .3s, ease-in-out, 0);
+            }
+
+            &.text-box-active{
+                #text-class{
+                    opacity: 0;
+                    @include translate(0, -100%, 0);
+                    @include transitionTransform(all, .3s, ease-in-out, 0);
+                }
+
+                #text-lesson{
+                    opacity: 1;
+                    @include translate(0, 0, 0);
+                    @include transitionTransform(all, .3s, ease-in-out, 0);
+                }
             }
         }
     }
