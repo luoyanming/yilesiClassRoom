@@ -16,11 +16,11 @@ var INDEX = {
         that.heartCount = 0;
 
         that.UIInit();
-        that.webSocketInit();
     },
     UIInit: function() {
-        that.flag = 'class';
-        that.$qrcode = $('#qrcode');
+        
+        that.$qrcodeClass = $('#qrcode-class');
+        that.$qrcodeLesson = $('#qrcode-lesson');
         that.$loading = $('#loading');
         that.$reload = $('#reload');
         that.$buttonReload = $('#button-reload');
@@ -29,10 +29,29 @@ var INDEX = {
         that.$textClass = $('#text-class');
         that.$textLesson = $('#text-lesson');
 
+        if(that.getQueryString('from') == 'lesson') {
+            that.flag = 'lesson';
+        } else {
+            that.flag = 'class';
+        }
+
+        if(that.flag == 'class') {
+            that.$buttonLesson.fadeIn(200);
+            that.$buttonClass.fadeOut(200);
+            that.$textClass.parent().removeClass('text-box-active');
+        } else if(that.flag == 'lesson') {
+            that.$buttonLesson.fadeOut(200);
+            that.$buttonClass.fadeIn(200);
+            that.$textClass.parent().addClass('text-box-active');
+        }
+
         that.buttonBind();
+
+        that.webSocketInit();
     },
     webSocketInit: function() {
-        that.$qrcode.hide();
+        that.$qrcodeClass.hide();
+        that.$qrcodeLesson.hide();
         that.$loading.fadeIn(200);
         that.$reload.hide();
 
@@ -46,7 +65,8 @@ var INDEX = {
         //连接发生错误的回调方法
         ws.onerror = function () {
             console.log("WebSocket连接发生错误");
-            that.$qrcode.fadeOut(200);
+            that.$qrcodeClass.fadeOut(200);
+            that.$qrcodeLesson.fadeOut(200);
             that.$loading.fadeOut(200);
             that.$reload.fadeIn(200);
         };
@@ -57,10 +77,21 @@ var INDEX = {
 
             that.sendHeartMsg();
 
-            that.sendMsg({
-                "bizType": 10000,
-                "data": {}
-            });
+            if(that.flag == 'class') {
+                that.sendMsg({
+                    "bizType": 10000,
+                    "data": {
+                        "loginType": 1  // 1: 上课； 2: 备课
+                    }
+                });
+            } else if(that.flag == 'lesson') {
+                that.sendMsg({
+                    "bizType": 10000,
+                    "data": {
+                        "loginType": 2  // 1: 上课； 2: 备课
+                    }
+                });
+            }
         }
 
         //接收到消息的回调方法
@@ -71,7 +102,8 @@ var INDEX = {
         //连接关闭的回调方法
         ws.onclose = function () {
             console.log("WebSocket连接关闭");
-            that.$qrcode.fadeOut(200);
+            that.$qrcodeClass.fadeOut(200);
+            that.$qrcodeLesson.fadeOut(200);
             that.$loading.fadeOut(200);
             that.$reload.fadeIn(200);
         }
@@ -107,15 +139,14 @@ var INDEX = {
             var img = new Image();
             img.src = res.data.qrCodeUrl;
             img.onload = function() {
-                that.$qrcode.attr('src', res.data.qrCodeUrl).fadeIn(200);
-                that.$loading.fadeOut(200);
-
-                if(that.getQueryString('from') == 'lesson') {
-                    that.$buttonLesson.fadeOut(200);
-                    that.$buttonClass.fadeIn(200);
-                    that.$textClass.parent().addClass('text-box-active');
-                    that.flag = 'lesson';
+                if(that.flag == 'class') {
+                    // 上课
+                    that.$qrcodeClass.attr('src', res.data.qrCodeUrl).fadeIn(200);
+                } else {
+                    // 备课
+                    that.$qrcodeLesson.attr('src', res.data.qrCodeUrl).fadeIn(200);
                 }
+                that.$loading.fadeOut(200);
             }
         } else if(res.code == 10001) {
             // 心跳包
@@ -160,7 +191,18 @@ var INDEX = {
             that.$textClass.parent().removeClass('text-box-active');
             that.flag = 'class';
 
-            that.relaodQrcodeImg();
+            that.$qrcodeLesson.fadeOut(200);
+            if(that.$qrcodeClass.attr('src')) {
+                that.$qrcodeClass.fadeIn(200);
+            } else {
+                that.$loading.fadeIn(200);
+                that.sendMsg({
+                    "bizType": 10000,
+                    "data": {
+                        "loginType": 1  // 1: 上课； 2: 备课
+                    }
+                });
+            }
         });
 
         // 备课按钮
@@ -170,13 +212,25 @@ var INDEX = {
             that.$textClass.parent().addClass('text-box-active');
             that.flag = 'lesson';
 
-            that.relaodQrcodeImg();
+            that.$qrcodeClass.fadeOut(200);
+            if(that.$qrcodeLesson.attr('src')) {
+                that.$qrcodeLesson.fadeIn(200);
+            } else {
+                that.$loading.fadeIn(200);
+                that.sendMsg({
+                    "bizType": 10000,
+                    "data": {
+                        "loginType": 2  // 1: 上课； 2: 备课
+                    }
+                });
+            }
         });
     },
 
     // 重新显示二维码
     relaodQrcodeImg: function() {
-        that.$qrcode.fadeOut(200);
+        that.$qrcodeClass.fadeOut(200);
+        that.$qrcodeLesson.fadeOut(200);
         that.$loading.fadeIn(200);
 
         var reloadXF = setTimeout(function() {

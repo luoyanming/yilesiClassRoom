@@ -14,7 +14,7 @@ $(function() {
             if(that.sid && that.token) {
                 that.webSocketInit();
             } else {
-                location.href = './index.html';
+                location.href = './index.html?from=lesson';
             }
         },
 
