@@ -54,6 +54,21 @@
             margin: 57px auto 0;
             overflow: hidden;
 
+            .qrcode-mask{
+                @include position(absolute, 5, 50%, none, none, 50%);
+                margin: -24px 0 0 -24px;
+                width: 48px;
+                height: 48px;
+
+                &.qrcode-mask-class{
+                    @include backgroundImage('../images/qrcode-class.png', no-repeat, center, center, 100%, 100%);
+                }
+                
+                &.qrcode-mask-lesson{
+                    @include backgroundImage('../images/qrcode-lesson.png', no-repeat, center, center, 100%, 100%);
+                }
+            }
+
             .qrcode,
             .loading,
             .reload{

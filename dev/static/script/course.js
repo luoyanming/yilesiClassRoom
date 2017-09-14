@@ -106,6 +106,14 @@ var INDEX = {
 
         //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口。
         window.onbeforeunload = function () {
+            that.sendMsg({
+                bizType: 10011,
+                sid: that.sid,
+                token: that.token,
+                data: {
+                    opType: 1001101
+                }
+            });
             ws.close();
         }
     },
@@ -213,14 +221,20 @@ var INDEX = {
                 optionsArr = [];
             if(info.answerType == 3) {
                 // 判断题
-                titlesArr = ['&radic;', 'x', '未答题'];
+                titlesArr = ["✓", "✕", '未答题'];
                 optionsArr = [
                     { 'value': info.numTrue, 'width': '', bgcolor: '#38A0FF' },
-                    { 'value': info.numFalse, 'width': '', bgcolor: '#1EC51D' },
+                    { 'value': info.numFalse, 'width': '', bgcolor: '#FFFD38' },
                     { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
                 ];
+
+                if(info.answer == '0' || info.answer == 0) {
+                    optionsArr[1].bgcolor = '#1EC51D';
+                } else if(info.answer == '1' || info.answer == 1) {
+                    optionsArr[0].bgcolor = '#1EC51D';
+                }
             } else if(info.answerType == 1) {
-                // 单选 多选
+                // 单选
                 titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '未答题'];
                 optionsArr = [
                     { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
@@ -231,8 +245,11 @@ var INDEX = {
                     { 'value': info.numF, 'width': '', bgcolor: '#C238FF' },
                     { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
                 ];
+
+                var index = titlesArr.indexOf(a.answer);
+                optionsArr[index].bgcolor = "#1EC51D";
             } else if(info.answerType == 2) {
-                // 单选 多选
+                // 多选
                 titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '答对', '未答题'];
                 optionsArr = [
                     { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
@@ -282,9 +299,28 @@ var INDEX = {
             // 显示学生列表
             that.$screen.find('.student').remove();
 
+            var text = '';
+            switch (parseInt(res.data.answerType)) {
+                case 0:
+                    text = "选择✕的学生";
+                    break;
+                case 1:
+                    text = "选择✓的学生";
+                    break;
+                case 2:
+                    text = "答对(" + res.data.rightAnswer + ")的学生";
+                    break;
+                case 4:
+                    text = "未答题的学生";
+                    break;
+                default:
+                    text = "选择" + res.data.answerType + "的学生"
+            }
+
             var str = '';
             str += '<div class="student">';
             str += '<div class="student-box">';
+            str += "<h2>" + text + "</h2>";
             for(var i = 0; i < res.data.studentList.length; i++) {
                 str += '<p>'+ res.data.studentList[i].name +'</p>';
             }
@@ -318,9 +354,9 @@ var INDEX = {
             cardMainItem.removeClass('selected');
             for (var i = 0; i < cardSelectList.length; i++) {
                 if(cardSelectList[i] == '0') {
-                    cardHeaderItem.eq(i).html('X');
+                    cardHeaderItem.eq(i).html('✕');
                 } else if(cardSelectList[i] == '1') {
-                    cardHeaderItem.eq(i).html('&radic;');
+                    cardHeaderItem.eq(i).html('✓');
                 } else {
                     cardHeaderItem.eq(i).html(cardSelectList[i]);
                 }
@@ -328,12 +364,7 @@ var INDEX = {
                 var index = cardList.indexOf(cardSelectList[i]);
                 cardMainItem.eq(index).addClass('selected');
             }
-            if(res.data.stuNum == 0) {
-                that.$bindcard.find('.card-info span').html('<a href="javascript:void(0);">查看学生名单</a>');
-            } else {
-                that.$bindcard.find('.card-info span').html('已有<span>'+ res.data.stuNum +'</span>名学生绑定成功！<a href="javascript:void(0);">查看学生名单</a>');
-            }
-
+            that.$bindcard.find(".card-info span").html(res.data.stuNum),
             that.$bindcard.show();
 
             var cardH = that.$bindcard.height(),
@@ -366,9 +397,13 @@ var INDEX = {
             that.$bindcard.removeClass('bindcard-active').hide();
             that.$bindlist.fadeIn(300);
         } else if(res.code == 80015) {
+            // 关闭学生列表
             that.$bindcard.removeClass('bindcard-active').hide();
             that.$bindlist.hide();
             that.$connection.fadeIn(300);
+        } else if(res.code == 80016) {
+            // 显示已绑学生人数
+            that.$bindcard.find(".card-info span").html(res.data.stuNum);
         } else if(res.code == 80017) {
             // 画笔开始
             var canvasData = [];

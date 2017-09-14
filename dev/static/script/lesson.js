@@ -20,6 +20,7 @@ $(function() {
 
         //  
         UIInit: function() {
+            that.$buttonLogout = $("#buttonLogout")
             that.$loading = $('.loading');
             that.$onlyone = $('.onlyone');
             that.$list = $('.list');
@@ -27,6 +28,19 @@ $(function() {
             that.$progressBar = $('#progressBar');
             that.$progressText = $('#progressText');
             that.$update = $('.update');
+
+            that.$buttonLogout.on("click", function() {
+                that.sendMsg({
+                    bizType: 10011,
+                    sid: that.sid,
+                    token: that.token,
+                    data: {
+                        opType: 1001101
+                    }
+                }),
+                ws.close(),
+                window.location.href = "./index.html?from=lesson"
+            })
         },
 
         webSocketInit: function() {
@@ -71,6 +85,15 @@ $(function() {
 
             //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口。
             window.onbeforeunload = function () {
+                that.sendMsg({
+                    bizType: 10011,
+                    sid: that.sid,
+                    token: that.token,
+                    data: {
+                        opType: 1001101
+                    }
+                });
+
                 ws.close();
             }
         },
@@ -110,10 +133,22 @@ $(function() {
             } else if(res.code == 10006) {
                 // 收到服务端返回的心跳包回复，心跳计数-1
                 that.heartCount -= 1;
+            } else if(res.code == 10007) {
+                // 账号在其它地方登陆，当前页面被踢下线
+                ws.close();
+                alert('您的账号已在其它地点登录，将被强制下线！');
+                location.href = './index.html'
             } else if(res.code == 10009) {
                 // 刷新list
-                that.$update.fadeIn(300);
-                that.updateBtnSureBind();
+                if(res.data.refresh) {
+                    that.showMsg("上传成功！正在同步列表...", "success");
+                    that.$mask.fadeOut(200);
+                    that.$loading.fadeIn(200)
+                } else {
+                    that.$update.fadeIn(300);
+                    that.updateBtnSureBind();
+                }
+
                 that.getCourseList();
             } else if(res.code == 80011) {
                 // 关闭同屏
@@ -204,7 +239,11 @@ $(function() {
                 temp += that.formUI(dataList[i].id);
                 temp += '</div>';
                 temp += '</div>';
-                temp += '<p class="title">'+ dataList[i].name +'</p>';
+                if(dataList[i].name.length > 8) {
+                    temp += '<p class="title">'+ dataList[i].name.substring(0, 8) +'...</p>';
+                } else {
+                    temp += '<p class="title">'+ dataList[i].name +'</p>';
+                }
                 temp += '</li>';
             }
             temp += '</ul>';
@@ -257,7 +296,7 @@ $(function() {
 
                         xhr.upload.onloadstart = function(){
                             that.$progressBar.css('width' , '1%');
-                            that.$progressText.html('0%');
+                            that.$progressText.html("正在上传：<span >0%</span>");
                             that.$mask.fadeIn(200);
 
                             if(courseID != 0) {
@@ -286,7 +325,8 @@ $(function() {
                     },
                     error: function () {
                         that.showMsg('文件上传失败！请重试！', 'error');
-                        that.sendUploadMsg(courseID, 'end');
+                        // that.sendUploadMsg(courseID, 'end');
+                        that.$mask.fadeOut(200);
 
                         var formBox = formWrap.parent();
                         formWrap.remove();
@@ -320,9 +360,14 @@ $(function() {
                 total = evt.total,
                 per = Math.floor(100*loaded/total);
 
-            // progressBar.css('width' , per + '%');
             that.$progressBar.css('width' , per + '%');
             that.$progressText.html(per + '%');
+
+            if(per == 100) {
+                that.$progressText.html("正在生成课程，请您稍作等待...");
+            } else {
+                that.$progressText.html("正在上传：<span >" + s + "%</span>");
+            }
         },
 
         //

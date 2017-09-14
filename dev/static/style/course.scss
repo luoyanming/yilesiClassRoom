@@ -203,6 +203,15 @@
                 width: 700px;
                 @include translate(-50%, -50%, 0);
 
+                .container .screen .student .student-box h2 {
+                    @include position(absolute, 33, -50px, 0, none, 0);
+                    color: #fff;
+                    font-size: 18px;
+                    text-align: center;
+                    line-height: 1;
+                    font-weight: 400;
+                }
+
                 p{
                     display: inline-block;
                     width: 100px;

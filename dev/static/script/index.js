@@ -23,6 +23,8 @@ var INDEX = {
         
         that.$qrcodeClass = $('#qrcode-class');
         that.$qrcodeLesson = $('#qrcode-lesson');
+        that.$qrcodeMaskClass = $("#qrcode-mask-class");
+        that.$qrcodeMaskLesson = $("#qrcode-mask-lesson");
         that.$loading = $('#loading');
         that.$reload = $('#reload');
         that.$buttonReload = $('#button-reload');
@@ -69,6 +71,8 @@ var INDEX = {
             console.log("WebSocket连接发生错误");
             that.$qrcodeClass.fadeOut(200);
             that.$qrcodeLesson.fadeOut(200);
+            that.$qrcodeMaskClass.fadeOut(200);
+            that.$qrcodeMaskLesson.fadeOut(200);
             that.$loading.fadeOut(200);
             that.$reload.fadeIn(200);
         };
@@ -106,6 +110,8 @@ var INDEX = {
             console.log("WebSocket连接关闭");
             that.$qrcodeClass.fadeOut(200);
             that.$qrcodeLesson.fadeOut(200);
+            that.$qrcodeMaskClass.fadeOut(200);
+            that.$qrcodeMaskLesson.fadeOut(200);
             that.$loading.fadeOut(200);
             that.$reload.fadeIn(200);
         }
@@ -194,8 +200,10 @@ var INDEX = {
             that.flag = 'class';
 
             that.$qrcodeLesson.fadeOut(200);
+            that.$qrcodeMaskLesson.fadeOut(200);
             if(that.$qrcodeClass.attr('src')) {
                 that.$qrcodeClass.fadeIn(200);
+                that.$qrcodeMaskClass.fadeIn(200);
             } else {
                 that.$loading.fadeIn(200);
                 that.sendMsg({
@@ -215,8 +223,10 @@ var INDEX = {
             that.flag = 'lesson';
 
             that.$qrcodeClass.fadeOut(200);
+            that.$qrcodeMaskClass.fadeOut(200);
             if(that.$qrcodeLesson.attr('src')) {
                 that.$qrcodeLesson.fadeIn(200);
+                that.$qrcodeMaskLesson.fadeIn(200);
             } else {
                 that.$loading.fadeIn(200);
                 that.sendMsg({
@@ -230,17 +240,17 @@ var INDEX = {
     },
 
     // 重新显示二维码
-    relaodQrcodeImg: function() {
-        that.$qrcodeClass.fadeOut(200);
-        that.$qrcodeLesson.fadeOut(200);
-        that.$loading.fadeIn(200);
+    // relaodQrcodeImg: function() {
+    //     that.$qrcodeClass.fadeOut(200);
+    //     that.$qrcodeLesson.fadeOut(200);
+    //     that.$loading.fadeIn(200);
 
-        var reloadXF = setTimeout(function() {
-            that.$qrcode.fadeIn(200);
-            that.$loading.fadeOut(200);
-            clearTimeout(reloadXF);
-        }, 1000);
-    },
+    //     var reloadXF = setTimeout(function() {
+    //         that.$qrcode.fadeIn(200);
+    //         that.$loading.fadeOut(200);
+    //         clearTimeout(reloadXF);
+    //     }, 1000);
+    // },
 
     //
     getQueryString: function(name){
