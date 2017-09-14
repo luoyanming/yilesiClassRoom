@@ -64,6 +64,16 @@
             max-height: 100%;
         }
 
+        .canvas{
+            @include position(absolute, 15, 0, 0, 0, 0);
+            overflow: hidden;
+
+            canvas{
+                @include position(absolute, 16, 50%, none, none, 50%);
+                @include translate(-50%, -50%, 0);
+            }
+        }
+
         .state-before{
             @include position(absolute, 20, none, 12px, 22px, none);
             width: 150px;

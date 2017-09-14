@@ -10,6 +10,8 @@ var INDEX = {
             localStorage.removeItem('picUrl');
             localStorage.removeItem('answerType');
             localStorage.removeItem('isAnswer');
+
+            localStorage.removeItem('canvasData');
         }
 
         that = this;
@@ -29,6 +31,11 @@ var INDEX = {
 
         // 心跳包计数
         that.heartCount = 0;
+
+        $(window).unbind('resize');
+        $(window).on('resize', function() {
+            location.href = location.href;
+        });
     },
     UIInit: function() {
         that.$course = $('#course');
@@ -153,8 +160,10 @@ var INDEX = {
             localStorage.removeItem('picUrl');
             localStorage.removeItem('answerType');
             localStorage.removeItem('isAnswer');
+            localStorage.removeItem('canvasData');
 
             that.$connection.fadeIn(200);
+            that.$screen.find('#canvas').remove();
             that.$screen.find('.state-before').remove();
             that.$screen.find('.state-doing').remove();
             that.$screen.find('.state-after').remove();
@@ -360,6 +369,93 @@ var INDEX = {
             that.$bindcard.removeClass('bindcard-active').hide();
             that.$bindlist.hide();
             that.$connection.fadeIn(300);
+        } else if(res.code == 80017) {
+            // 画笔开始
+            var canvasData = [];
+
+            if(!localStorage.getItem('canvasData')) {
+                canvasData = [];
+            } else {
+                canvasData = JSON.parse(localStorage.getItem('canvasData'));
+
+                for(var i = 0; i < canvasData.length; i++) {
+                    if(canvasData[i].picUrl == localStorage.getItem('picUrl')) {
+                        that.canvasInit();
+                        return;
+                    }
+                }
+            }
+
+            canvasData.push({
+                'picUrl': localStorage.getItem('picUrl'),
+                'data': {
+                    'width': res.data.initData.width,
+                    'height': res.data.initData.height
+                }
+            });
+            localStorage.setItem('canvasData', JSON.stringify(canvasData));
+
+            that.canvasInit();
+        } else if(res.code == 80018) {
+            // 画布上的点
+            var canvasData = JSON.parse(localStorage.getItem('canvasData')),
+                points = res.data.points[0],
+                picUrl = localStorage.getItem('picUrl');
+
+            for(var i = 0; i < canvasData.length; i++) {
+                if(canvasData[i].picUrl == picUrl) {
+                    var data = canvasData[i].data;
+
+                    if(data.lines) {
+                        for(var j = 0; j < data.lines.length; j++) {
+                            if(data.lines[j].lineId == points.lineId) {
+
+                                if(!data.lines[j].location){
+                                    data.lines[j].location = [];
+                                }
+
+                                data.lines[j].location.push({
+                                    'x': points.x,
+                                    'y': points.y
+                                });
+
+                                localStorage.setItem('canvasData', JSON.stringify(canvasData));
+                                that.drawCanvas();
+                                return;
+                            }
+                        }
+
+                        data.lines.push({
+                            'lineId': points.lineId,
+                            'color': points.color,
+                            'isEraser': points.isEraser,
+                            'location': [{
+                                'x': points.x,
+                                'y': points.y
+                            }]
+                        });
+
+                        localStorage.setItem('canvasData', JSON.stringify(canvasData));
+                        that.drawCanvas();
+                        return;
+                    } else {
+                        data.lines = [];
+                        data.lines.push({
+                            'lineId': points.lineId,
+                            'color': points.color,
+                            'isEraser': points.isEraser,
+                            'location': [{
+                                'x': points.x,
+                                'y': points.y
+                            }]
+                        });
+
+                        localStorage.setItem('canvasData', JSON.stringify(canvasData));
+                        that.drawCanvas();
+                        return;
+                    }
+                }
+            }
         }
     },
 
@@ -379,6 +475,7 @@ var INDEX = {
         that.$courseImg.hide();
         that.showLoading('正在同步显示手机屏幕，请稍候');
 
+        that.$screen.find('#canvas').remove();
         that.$screen.find('.state-before').remove();
         that.$screen.find('.state-doing').remove();
         that.$screen.find('.state-after').remove();
@@ -415,15 +512,15 @@ var INDEX = {
         var img = new Image();
             img.src = picurl,
             pageWidth = window.innerWidth,
-            pageHeight = window.innerHeight;
+            pageHeight = window.innerHeight - 42;
 
         if(typeof pageWidth != 'number') {
             if(document.compatMode == 'CSS1Compat') {
                 pageWidth = document.documentElement.clientWidth;
-                pageHeight = document.documentElement.clientHeight;
+                pageHeight = document.documentElement.clientHeight - 42;
             } else {
                 pageWidth = document.body.clientWidth;
-                pageHeight = document.body.clientHeight;
+                pageHeight = document.body.clientHeight - 42;
             }
         }
 
@@ -443,6 +540,8 @@ var INDEX = {
             that.$loading.fadeOut(200);
             that.$courseImg.attr('src', picurl).show();
             that.$screen.fadeIn(200);
+
+            that.canvasInit();
 
             if(piclist) {
                 that.preloadImages(piclist);
@@ -477,6 +576,120 @@ var INDEX = {
         for(var i = 0; i < list.length; i++) {
             images[i] = new Image();
             images[i].src = list[i];
+        }
+    },
+
+    // 初始化画布
+    canvasInit: function() {
+        var picUrl = localStorage.getItem('picUrl'),
+            canvasData = JSON.parse(localStorage.getItem('canvasData'));
+
+        if(!canvasData) {
+            return false;
+        }
+
+        for(var i = 0; i < canvasData.length; i++) {
+            if(canvasData[i].picUrl == localStorage.getItem('picUrl')) {
+                var data = canvasData[i].data,
+                    cw = data.width,
+                    ch = data.height,
+                    pageWidth = window.innerWidth,
+                    pageHeight = window.innerHeight - 42;
+
+                if(typeof pageWidth != 'number') {
+                    if(document.compatMode == 'CSS1Compat') {
+                        pageWidth = document.documentElement.clientWidth;
+                        pageHeight = document.documentElement.clientHeight - 42;
+                    } else {
+                        pageWidth = document.body.clientWidth;
+                        pageHeight = document.body.clientHeight - 42;
+                    }
+                }
+                var pageBL = pageWidth/pageHeight;
+                
+                var imgW = $('#courseImg').width(),
+                    imgH = $('#courseImg').height(),
+                    imgBL = imgW/imgH,
+                    imgScale;
+
+                if(imgBL > pageBL) {
+                    imgScale = pageWidth/cw;
+                    cw = pageWidth;
+                    ch = ch * imgScale;
+                } else {
+                    imgScale = pageHeight/ch;
+                    cw = cw * imgScale;
+                    ch = pageHeight;
+                }
+
+                localStorage.setItem('scale', imgScale);
+                that.createCanvas(cw, ch);
+                return;
+            }
+        }
+    },
+
+    // 创建 画布
+    createCanvas: function(cw, ch) {
+        $('.canvas').html('<canvas id="canvas" width="'+ cw +'" height="'+ ch +'"></canvas>');
+
+        that.drawCanvas();
+    },
+
+    // 绘制图像
+    drawCanvas: function() {
+        var picUrl = localStorage.getItem('picUrl'),
+            canvasData = JSON.parse(localStorage.getItem('canvasData')),
+            canvas = document.getElementById('canvas'),
+            context = canvas.getContext('2d');
+
+        context.clearRect(0, 0, $('#canvas').width(), $('#canvas').height());
+
+        for(var i = 0; i < canvasData.length; i++) {
+            if(canvasData[i].picUrl == localStorage.getItem('picUrl')) {
+                var lines = canvasData[i].data.lines,
+                    scale = localStorage.getItem('scale');
+
+                if(!lines) {
+                    return false;
+                }
+
+                
+                context.lineCap = 'round';
+                context.lineJoin = "round";
+                for(var l = 0; l < lines.length; l++) {
+                    var color = lines[l].color,
+                        isEraser = lines[l].isEraser,
+                        location = lines[l].location;
+
+                    if(color == '-2681322') {
+                        color = '#D71616';  //red
+                    } else if(color == '-13065985') {
+                        color = '#38A0FF';  // blue
+                    } else {
+                        // color = 'rgba(0, 0, 0, 0)';
+                    }
+
+                    if(isEraser) {
+                        context.globalCompositeOperation = "destination-out";
+                        context.lineWidth = 40 * parseFloat(localStorage.getItem('scale'));
+                    } else {
+                        context.globalCompositeOperation = "source-over";
+                        context.lineWidth = 4 * parseFloat(localStorage.getItem('scale'));;
+                    }
+                    context.beginPath();
+                    context.strokeStyle = color;
+                    for(var p = 0; p < location.length - 1; p++) {
+                        context.moveTo(parseFloat(location[p].x) * scale, parseFloat(location[p].y) * scale);
+                        context.lineTo(parseFloat(location[p + 1].x) * scale, parseFloat(location[p + 1].y) * scale);
+                    }
+                    context.closePath();
+                    context.stroke();
+                }
+                
+
+                return;
+            }
         }
     },
 
