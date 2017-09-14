@@ -246,7 +246,7 @@ var INDEX = {
                     { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
                 ];
 
-                var index = titlesArr.indexOf(a.answer);
+                var index = titlesArr.indexOf(info.answer);
                 optionsArr[index].bgcolor = "#1EC51D";
             } else if(info.answerType == 2) {
                 // 多选

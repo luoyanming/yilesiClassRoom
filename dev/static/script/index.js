@@ -150,9 +150,11 @@ var INDEX = {
                 if(that.flag == 'class') {
                     // 上课
                     that.$qrcodeClass.attr('src', res.data.qrCodeUrl).fadeIn(200);
+                    that.$qrcodeMaskClass.fadeIn(200);
                 } else {
                     // 备课
                     that.$qrcodeLesson.attr('src', res.data.qrCodeUrl).fadeIn(200);
+                    that.$qrcodeMaskLesson.fadeIn(200);
                 }
                 that.$loading.fadeOut(200);
             }
