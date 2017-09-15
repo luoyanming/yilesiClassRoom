@@ -141,7 +141,7 @@ $(function() {
             } else if(res.code == 10009) {
                 // 刷新list
                 if(res.data.refresh) {
-                    that.showMsg("上传成功！正在同步列表...", "success");
+                    // that.showMsg("上传成功！正在同步列表...", "success");
                     that.$mask.fadeOut(200);
                     that.$loading.fadeIn(200)
                 } else {
@@ -279,63 +279,97 @@ $(function() {
                 formData.append('file', $(this)[0].files[0]);
                 formData.append('sid', that.sid);
                 formData.append('token', that.token);
-                formData.append('courseId', courseID);
                 formData.append('deviceType', 1);
 
-                $.ajax({
-                    url: CONFIG.apiOnline + '/course/upload/ppt',
-                    type: 'POST',
-                    data: formData,
-                    dataType: 'JSON',
-                    async: true,
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    xhr: function() {
-                        var xhr = $.ajaxSettings.xhr();
+                if(courseID != 0) {
+                    // 编辑课程
 
-                        xhr.upload.onloadstart = function(){
-                            that.$progressBar.css('width' , '1%');
-                            that.$progressText.html("正在上传：<span >0%</span>");
-                            that.$mask.fadeIn(200);
+                    // 向服务端发送上传开始请求
+                    // that.sendUploadMsg(courseID, 'start');
 
-                            if(courseID != 0) {
-                                // 编辑课程
-                                // 向服务端发送上传开始请求
-                                that.sendUploadMsg(courseID, 'start');
+                    formData.append('tempCourseId', courseID);
+                    formData.append('courseId', courseID);
+
+                    that.uploadppt(formData);
+                } else {
+                    formData.append('tempCourseId', 0);
+
+                    // 新增课程
+                    $.ajax({
+                        url: CONFIG.apiOnline + '/course/add',
+                        dataType: 'json',
+                        type: 'post',
+                        data: {
+                            sid: that.sid,
+                            token: that.token,
+                            pptName: fileTypeArr[0]
+                        },
+                        success:function(res) {
+                            if(res.data.list.length == 0) {
+                                formData.append('courseId', res.data.courseId);
+
+                                that.uploadppt(formData);
+                            } else {
+                                that.showMsg(res.errorInfo, 'error');
                             }
-                        };
-
-                        xhr.upload.onprogress = that.onprogress;
-
-                        return xhr;
-                    },  
-                    success: function (res) {
-                        if(res.code == 0) {
-                            that.showMsg('上传成功！正在同步列表...', 'success');
-                            that.$mask.fadeOut(200);
-                            that.$loading.fadeIn(200);
-
-                            that.getCourseList();
-                        } else {
-                            that.showMsg(res.errorInfo, 'error');
+                        },
+                        error: function() {
+                            that.showMsg('新增课程失败，请刷新页面重试！', 'error');
                         }
+                    });
+                }
 
-                        that.sendUploadMsg(courseID, 'end');
-                    },
-                    error: function () {
-                        that.showMsg('文件上传失败！请重试！', 'error');
-                        // that.sendUploadMsg(courseID, 'end');
-                        that.$mask.fadeOut(200);
+            });
+        },
 
-                        var formBox = formWrap.parent();
-                        formWrap.remove();
-                        formBox.html(that.formUI(courseID));
+        // 上传ppt
+        uploadppt: function(formData) {
+            $.ajax({
+                url: CONFIG.apiOnline + '/course/upload/ppt',
+                type: 'POST',
+                data: formData,
+                dataType: 'JSON',
+                async: true,
+                cache: false,
+                contentType: false,
+                processData: false,
+                xhr: function() {
+                    var xhr = $.ajaxSettings.xhr();
 
-                        that.inputFileBind();
+                    xhr.upload.onloadstart = function(){
+                        that.$progressBar.css('width' , '1%');
+                        that.$progressText.html("正在上传：<span >0%</span>");
+                        that.$mask.fadeIn(200);
+                    };
+
+                    xhr.upload.onprogress = that.onprogress;
+
+                    return xhr;
+                },  
+                success: function (res) {
+                    if(res.code == 0) {
+                        that.showMsg('上传成功！正在同步列表...', 'success');
+                        // that.$mask.fadeOut(200);
+                        // that.$loading.fadeIn(200);
+
+                        // that.getCourseList();
+                    } else {
+                        that.showMsg(res.errorInfo, 'error');
                     }
-                });
 
+                    // that.sendUploadMsg(courseID, 'end');
+                },
+                error: function () {
+                    that.showMsg('文件上传失败！请重试！', 'error');
+                    // that.sendUploadMsg(courseID, 'end');
+                    that.$mask.fadeOut(200);
+
+                    var formBox = formWrap.parent();
+                    formWrap.remove();
+                    formBox.html(that.formUI(courseID));
+
+                    that.inputFileBind();
+                }
             });
         },
 
