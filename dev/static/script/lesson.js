@@ -309,7 +309,7 @@ $(function() {
                             pptName: fileTypeArr[0]
                         },
                         success:function(res) {
-                            if(res.data.list.length == 0) {
+                            if(res.code == 0) {
                                 formData.append('courseId', res.data.courseId);
 
                                 that.uploadppt(formData);
