@@ -233,7 +233,11 @@ $(function() {
                 } else {
                     temp += '<div class="upload-wrap upload-wrap-nodata">';
                 }
-                temp += '<img src="'+ dataList[i].picUrl +'" class="thumb">';
+                if(dataList[i].picUrl == '') {
+                    temp += '<img src="./static/images/course-default.png" class="thumb">';
+                } else {
+                    temp += '<img src="'+ dataList[i].picUrl +'" class="thumb">';
+                }
                 temp += '<div class="mask-plus"></div>';
                 temp += '<div class="file-wrap">';
                 temp += that.formUI(dataList[i].id);
