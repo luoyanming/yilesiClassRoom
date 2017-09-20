@@ -37,8 +37,8 @@ $(function() {
                     data: {
                         opType: 1001101
                     }
-                }),
-                ws.close(),
+                });
+                ws.close();
                 window.location.href = "./index.html?from=lesson"
             })
         },
