@@ -10,7 +10,12 @@ var INDEX = {
         localStorage.removeItem('picUrl');
         localStorage.removeItem('answerType');
         localStorage.removeItem('isAnswer');
-
+        localStorage.removeItem('timeClock');
+        localStorage.removeItem('answerNum');
+        localStorage.removeItem('answerCharts');
+        localStorage.removeItem('answerStudent');
+        localStorage.removeItem('bindcardData');
+        localStorage.removeItem('bindStudentData');
         localStorage.removeItem('canvasData');
 
         that = this;

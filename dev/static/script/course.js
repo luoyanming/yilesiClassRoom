@@ -7,10 +7,16 @@ var INDEX = {
             localStorage.setItem('sid', '');
             localStorage.setItem('token', '');
 
+            localStorage.removeItem('sessionType');
             localStorage.removeItem('picUrl');
             localStorage.removeItem('answerType');
             localStorage.removeItem('isAnswer');
-
+            localStorage.removeItem('timeClock');
+            localStorage.removeItem('answerNum');
+            localStorage.removeItem('answerCharts');
+            localStorage.removeItem('answerStudent');
+            localStorage.removeItem('bindcardData');
+            localStorage.removeItem('bindStudentData');
             localStorage.removeItem('canvasData');
         }
 
@@ -26,7 +32,7 @@ var INDEX = {
         if(that.sid && that.token) {
             that.webSocketInit();
         } else {
-            location.href = './index.html';
+            location.href = './index.html?from=class';
         }
 
         // 心跳包计数
@@ -149,12 +155,16 @@ var INDEX = {
         } else if(res.code == 10002) {
             // 登陆成功
             if(localStorage.getItem('picUrl')) {
+                // 如果有缓存（表示上课过程中刷新页面）
                 that.showImage(localStorage.getItem('picUrl'), localStorage.getItem('answerType'), localStorage.getItem('isAnswer'));
             } else {
                 that.$connection.fadeIn(200);
                 that.$screen.fadeIn(200);
                 that.$loading.fadeOut(200);
             }
+
+            // 刷新页面，图片显示完成后显示缓存内容
+            that.showSessionMask();
         } else if(res.code == 10006) {
             // 收到服务端返回的心跳包回复，心跳计数-1
             that.heartCount -= 1;
@@ -162,12 +172,19 @@ var INDEX = {
             // 账号在其它地方登陆，当前页面被踢下线
             ws.close();
             alert('您的账号已在其它地点登录，将被强制下线！');
-            location.href = './index.html'
+            location.href = './index.html?from=class';
         } else if(res.code == 80002) {
             // 结束录制
+            localStorage.removeItem('sessionType');
             localStorage.removeItem('picUrl');
             localStorage.removeItem('answerType');
             localStorage.removeItem('isAnswer');
+            localStorage.removeItem('timeClock');
+            localStorage.removeItem('answerNum');
+            localStorage.removeItem('answerCharts');
+            localStorage.removeItem('answerStudent');
+            // localStorage.removeItem('bindcardData');
+            // localStorage.removeItem('bindStudentData');
             localStorage.removeItem('canvasData');
 
             that.$connection.fadeIn(200);
@@ -175,13 +192,14 @@ var INDEX = {
             that.$screen.find('.state-before').remove();
             that.$screen.find('.state-doing').remove();
             that.$screen.find('.state-after').remove();
-            that.$screen.find('.state-chart').remove();
-            that.$screen.find('.state-student').remove();
+            that.$screen.find('.chart').remove();
+            that.$screen.find('.student').remove();
             that.$courseImg.hide();
             that.$screen.fadeIn(200);
             that.$loading.fadeOut(200);
         } else if(res.code == 80003) {
             // 课件图片
+            localStorage.setItem('sessionType', '0');
             if(res.data.picList) {
                 that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer, res.data.picList);
             } else {
@@ -189,213 +207,53 @@ var INDEX = {
             }
         } else if(res.code == 80004) {
             // 开始答题
+            localStorage.setItem('sessionType', '2');
             that.$screen.find('.state-before').remove();
             that.$screen.find('.state-after').remove();
             that.$screen.find('.chart').remove();
-
-            var str = '';
-            str += '<div class="state-doing">';
-            str += '<p class="text text-time">答题时间：00:00:00</p>';
-            str += '<p class="text text-number">答题人数：0人</p>';
-            str += '<div class="button-stop">结束答题</div>';
-            str += '</div>';
-
-            that.$screen.append(str);
-            that.timeClock();
+            that.startAnswer();
         } else if(res.code == 80005) {
             // 结束答题
-            var str = '';
-            str += '<div class="state-after">';
-            str += '<div class="button-detail">查看结果</div>';
-            str += '<p class="text">重新答题</p>';
-            str += '</div>';
-
-            // 清除定时器
-            clearInterval(that.XF);
-            that.$screen.find('.state-doing').remove();
-            that.$screen.append(str);
+            localStorage.setItem('sessionType', '3');
+            that.endAnswer();
         } else if(res.code == 80006) {
-            // 显示答案
-            var info = res.data.answerInfo,
-                titlesArr = [],
-                optionsArr = [];
-            if(info.answerType == 3) {
-                // 判断题
-                titlesArr = ["✓", "✕", '未答题'];
-                optionsArr = [
-                    { 'value': info.numTrue, 'width': '', bgcolor: '#38A0FF' },
-                    { 'value': info.numFalse, 'width': '', bgcolor: '#FFFD38' },
-                    { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
-                ];
-
-                if(info.answer == '0' || info.answer == 0) {
-                    optionsArr[1].bgcolor = '#1EC51D';
-                } else if(info.answer == '1' || info.answer == 1) {
-                    optionsArr[0].bgcolor = '#1EC51D';
-                }
-            } else if(info.answerType == 1) {
-                // 单选
-                titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '未答题'];
-                optionsArr = [
-                    { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
-                    { 'value': info.numB, 'width': '', bgcolor: '#FFFD38' },
-                    { 'value': info.numC, 'width': '', bgcolor: '#D71616' },
-                    { 'value': info.numD, 'width': '', bgcolor: '#D68A16' },
-                    { 'value': info.numE, 'width': '', bgcolor: '#7A38FF' },
-                    { 'value': info.numF, 'width': '', bgcolor: '#C238FF' },
-                    { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
-                ];
-
-                var index = titlesArr.indexOf(info.answer);
-                optionsArr[index].bgcolor = "#1EC51D";
-            } else if(info.answerType == 2) {
-                // 多选
-                titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '答对', '未答题'];
-                optionsArr = [
-                    { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
-                    { 'value': info.numB, 'width': '', bgcolor: '#FFFD38' },
-                    { 'value': info.numC, 'width': '', bgcolor: '#D71616' },
-                    { 'value': info.numD, 'width': '', bgcolor: '#D68A16' },
-                    { 'value': info.numE, 'width': '', bgcolor: '#7A38FF' },
-                    { 'value': info.numF, 'width': '', bgcolor: '#C238FF' },
-                    { 'value': info.rightNum, 'width': '', bgcolor: '#1EC51D' },
-                    { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
-                ];
-            }
-
-            var compareArr = [];
-            for(var m = 0; m < optionsArr.length; m++) {
-                compareArr.push(optionsArr[m].value);
-            }
-            compareArr.sort(that.compare);
-            var max = compareArr.pop();
-            for(var i = 0; i < optionsArr.length; i++) {
-                optionsArr[i].width = parseInt(optionsArr[i].value)/parseInt(max) * 90;
-            }
-
-            var str = '';
-            str += '<div class="chart">';
-            str += '<div class="chart-box flex-h">';
-            str += '<div class="time">答题时间：00:'+ that.transMinute(Math.floor(info.costTime/60)) +':'+ that.transSecond(info.costTime%60) +'</div>';
-            str += '<div class="titles">';
-            for(var j = 0; j < titlesArr.length; j++) {
-                str += '<p class="titles-item">'+ titlesArr[j] +'</p>';
-            }
-            str += '</div>';
-            str += '<div class="options flex-a-i">';
-            for(var k = 0; k < optionsArr.length; k++) {
-                str += '<div class="options-item flex-h">';
-                str += '<p class="color-line" style="width: '+ optionsArr[k].width +'%; background: '+ optionsArr[k].bgcolor +';"></p>';
-                str += '<p class="text">'+ optionsArr[k].value +'人</p>';
-                str += '</div>';
-            }
-            str += '</div>';
-            str += '</div>';
-            str += '</div>';
-
-            that.$screen.find('.state-after').fadeOut(200);
-            that.$screen.append(str);
+            // 显示答题结果图表
+            localStorage.setItem('sessionType', '4');
+            localStorage.setItem('answerCharts', JSON.stringify(res.data.answerInfo));
+            that.showAnswerCharts();
         } else if(res.code == 80007) {
             // 显示学生列表
-            that.$screen.find('.student').remove();
-
-            var text = '';
-            switch (parseInt(res.data.answerType)) {
-                case 0:
-                    text = "选择✕的学生";
-                    break;
-                case 1:
-                    text = "选择✓的学生";
-                    break;
-                case 2:
-                    text = "答对(" + res.data.rightAnswer + ")的学生";
-                    break;
-                case 4:
-                    text = "未答题的学生";
-                    break;
-                default:
-                    text = "选择" + res.data.answerType + "的学生"
-            }
-
-            var str = '';
-            str += '<div class="student">';
-            str += '<div class="student-box">';
-            str += "<h2>" + text + "</h2>";
-            for(var i = 0; i < res.data.studentList.length; i++) {
-                str += '<p>'+ res.data.studentList[i].name +'</p>';
-            }
-            str += '</div>';
-            str += '</div>';
-
-            that.$screen.find('.chart').hide();
-            that.$screen.append(str);
+            localStorage.setItem('sessionType', '5');
+            localStorage.setItem('answerStudent', JSON.stringify(res.data));
+            that.showStudent();
         } else if(res.code == 80008) {
             // 收到服务端的答题学生人数
-            that.$screen.find('.state-doing .text-number').html('答题人数：'+ res.data.answerNum +'人');
+            localStorage.setItem('answerNum', res.data.answerNum);
+            that.$screen.find('.state-doing .text-number').html('答题人数：' + res.data.answerNum + '人');
         } else if(res.code == 80009) {
             // 关闭答题结果
-            that.$screen.find('.chart').hide();
-            that.$screen.find('.state-after').fadeIn(200);
+            localStorage.setItem('sessionType', '3');
+            that.$screen.find('.chart').remove();
+            that.endAnswer();
         } else if(res.code == 80010) {
             // 关闭学生姓名页面
-            that.$screen.find('.student').hide();
-            that.$screen.find('.chart').fadeIn(200);
+            localStorage.setItem('sessionType', '4');
+            that.$screen.find('.student').remove();
+            that.showAnswerCharts();
         } else if(res.code == 80011) {
             // 关闭同屏
             ws.close();
-            location.href = './index.html'
+            location.href = './index.html?from=class';
         } else if(res.code == 80013) {
             // 显示建班页面
-            var cardList = ['A', 'B', 'C', 'D', 'E', 'F', '', '1', '0'],
-                cardSelectList = res.data.code.split(''),
-                cardHeaderItem = that.$bindcard.find('.card-header .card-item'),
-                cardMainItem = that.$bindcard.find('.card-main .card-item');
-
-            cardMainItem.removeClass('selected');
-            for (var i = 0; i < cardSelectList.length; i++) {
-                if(cardSelectList[i] == '0') {
-                    cardHeaderItem.eq(i).html('✕');
-                } else if(cardSelectList[i] == '1') {
-                    cardHeaderItem.eq(i).html('✓');
-                } else {
-                    cardHeaderItem.eq(i).html(cardSelectList[i]);
-                }
-
-                var index = cardList.indexOf(cardSelectList[i]);
-                cardMainItem.eq(index).addClass('selected');
-            }
-            that.$bindcard.find(".card-info span").html(res.data.stuNum),
-            that.$bindcard.show();
-
-            var cardH = that.$bindcard.height(),
-                cardBoxH = that.$bindcard.find('.bindcard-box').height(),
-                scale = cardH/cardBoxH;
-
-            that.$bindcard.find('.bindcard-box').css({
-                '-webkit-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
-                   '-moz-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
-                    '-ms-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
-                        'transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')'
-            });
-
-            that.$connection.hide();
-            that.$bindlist.hide();
-            that.$bindcard.addClass('bindcard-active');
+            localStorage.setItem('sessionType', '80');
+            localStorage.setItem('bindcardData', JSON.stringify(res.data));
+            that.showBindCard();
         } else if(res.code == 80014) {
             // 建班查看学生列表
-            if(res.data.studentList && res.data.studentList.length > 0) {
-                var temp = '';
-                for(var i = 0; i < res.data.studentList.length; i++) {
-                    temp += '<li class="list-item">'+ res.data.studentList[i] +'</li>';
-                }
-
-                that.$bindlist.find('ul').html(temp);
-            } else {
-                that.$bindlist.find('ul').html('<li class="no-data">暂无绑定的学生</li>');
-            }
-
-            that.$bindcard.removeClass('bindcard-active').hide();
-            that.$bindlist.fadeIn(300);
+            localStorage.setItem('sessionType', '81');
+            localStorage.setItem('bindStudentData', JSON.stringify(res.data));
+            that.showBindStudent();
         } else if(res.code == 80015) {
             // 关闭学生列表
             that.$bindcard.removeClass('bindcard-active').hide();
@@ -403,6 +261,9 @@ var INDEX = {
             that.$connection.fadeIn(300);
         } else if(res.code == 80016) {
             // 显示已绑学生人数
+            var bindcardData = JSON.parse(localStorage.getItem('bindcardData'));
+            bindcardData.stuNum = res.data.stuNum;
+            localStorage.setItem('bindcardData', JSON.stringify(bindcardData));
             that.$bindcard.find(".card-info span").html(res.data.stuNum);
         } else if(res.code == 80017) {
             // 画笔开始
@@ -514,40 +375,13 @@ var INDEX = {
         that.$screen.find('.state-before').remove();
         that.$screen.find('.state-doing').remove();
         that.$screen.find('.state-after').remove();
-        that.$screen.find('.state-chart').remove();
-        that.$screen.find('.state-student').remove();
+        that.$screen.find('.chart').remove();
+        that.$screen.find('.student').remove();
 
-        answerType = parseInt(answerType)
-        if(answerType != 0) {
-            if(localStorage.getItem('isAnswer')) {
-                var str = '';
-                str += '<div class="state-after">';
-                str += '<div class="button-detail">查看结果</div>';
-                str += '<p class="text">重新答题</p>';
-                str += '</div>';
-
-                that.$screen.append(str);
-            } else {
-                switch (answerType) {
-                    case 1: //单选
-                        that.$screen.append('<div class="state-before">答题(单选)</div>');
-                        break;
-                    case 2: //多选
-                        that.$screen.append('<div class="state-before">答题(多选)</div>');
-                        break;
-                    case 3: //判断
-                        that.$screen.append('<div class="state-before">答题(判断)</div>');
-                        break;
-                    default :
-                        that.$screen.append('');
-                }
-            }
-        }
-
-        var img = new Image();
-            img.src = picurl,
+        var img = new Image(),
             pageWidth = window.innerWidth,
-            pageHeight = window.innerHeight - 42;
+            pageHeight = window.innerHeight - 42,
+            pageBL;
 
         if(typeof pageWidth != 'number') {
             if(document.compatMode == 'CSS1Compat') {
@@ -559,8 +393,8 @@ var INDEX = {
             }
         }
 
-        var pageBL = pageWidth/pageHeight;
-
+        pageBL = pageWidth/pageHeight;
+        img.src = picurl;
         img.onload = function() {
             var imgW = img.width,
                 imgH = img.height,
@@ -584,6 +418,292 @@ var INDEX = {
         }
     },
 
+    // 显示缓存的内容
+    showSessionMask: function() {
+        var sType = parseInt(localStorage.getItem('sessionType'));
+
+        switch (sType) {
+            case 0: //课件无答题
+                that.showProblem();
+                break;
+            case 2: //开始答题
+                that.startAnswer();
+                break;
+            case 3: //结束答题
+                that.endAnswer();
+                break;
+            case 4: //答题结果图表
+                that.showAnswerCharts();
+                break;
+            case 5: //答题学生列表
+                that.showStudent();
+                break;
+            case 80: //显示绑卡界面
+                console.log(80)
+                that.showBindCard();
+                break;
+            case 81: //显示绑卡学生列表
+                that.showBindStudent();
+                break;
+            default:
+                return;
+        }
+    },
+
+    // 显示题目
+    showProblem: function() {
+        answerType = parseInt(localStorage.getItem('answerType'));  // 0:无题目 1:单选 2:多选 3:判断
+                
+        if(answerType != 0) {
+            // 有题目
+            if(localStorage.getItem('isAnswer')) {
+                // 已答题
+                var str = '';
+                str += '<div class="state-after">';
+                str += '<div class="button-detail">查看结果</div>';
+                str += '<p class="text">重新答题</p>';
+                str += '</div>';
+
+                that.$screen.append(str);
+            } else {
+                switch (answerType) {
+                    case 1: //单选
+                        that.$screen.append('<div class="state-before">答题(单选)</div>');
+                        break;
+                    case 2: //多选
+                        that.$screen.append('<div class="state-before">答题(多选)</div>');
+                        break;
+                    case 3: //判断
+                        that.$screen.append('<div class="state-before">答题(判断)</div>');
+                        break;
+                    default :
+                        that.$screen.append('');
+                }
+            }
+        }
+    },
+
+    // 开始答题
+    startAnswer: function() {
+        var str = '',
+            time;
+        
+        if(localStorage.getItem('timeClock')) {
+            time = JSON.parse(localStorage.getItem('timeClock'));
+        } else {
+            time = {
+                minutes: '00',
+                seconds: '00'
+            }
+        }
+        str += '<div class="state-doing">';
+        str += '<p class="text text-time">答题时间：00:'+ time.minutes +':'+ time.seconds + '</p>';
+        str += '<p class="text text-number">答题人数：'+ localStorage.getItem('answerNum') +'人</p>';
+        str += '<div class="button-stop">结束答题</div>';
+        str += '</div>';
+
+        that.$screen.find('.state-doing').remove();
+        that.$screen.append(str);
+        that.timeClock();
+    },
+
+    // 结束答题
+    endAnswer: function() {
+        var str = '';
+        str += '<div class="state-after">';
+        str += '<div class="button-detail">查看结果</div>';
+        str += '<p class="text">重新答题</p>';
+        str += '</div>';
+
+        // 清除定时器
+        clearInterval(that.XF);
+        localStorage.removeItem('timeClock');
+        that.$screen.find('.state-before').remove();
+        that.$screen.find('.state-doing').remove();
+        that.$screen.find('.state-after').remove();
+        that.$screen.append(str);
+    },
+
+    // 显示答题结果
+    showAnswerCharts: function() {
+        var info = JSON.parse(localStorage.getItem('answerCharts')),
+            titlesArr = [],
+            optionsArr = [];
+
+        if(info.answerType == 3) {
+            // 判断题
+            titlesArr = ["✓", "✕", '未答题'];
+            optionsArr = [
+                { 'value': info.numTrue, 'width': '', bgcolor: '#38A0FF' },
+                { 'value': info.numFalse, 'width': '', bgcolor: '#FFFD38' },
+                { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
+            ];
+
+            if(info.answer == '0' || info.answer == 0) {
+                optionsArr[1].bgcolor = '#1EC51D';
+            } else if(info.answer == '1' || info.answer == 1) {
+                optionsArr[0].bgcolor = '#1EC51D';
+            }
+        } else if(info.answerType == 1) {
+            // 单选
+            titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '未答题'];
+            optionsArr = [
+                { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
+                { 'value': info.numB, 'width': '', bgcolor: '#FFFD38' },
+                { 'value': info.numC, 'width': '', bgcolor: '#D71616' },
+                { 'value': info.numD, 'width': '', bgcolor: '#D68A16' },
+                { 'value': info.numE, 'width': '', bgcolor: '#7A38FF' },
+                { 'value': info.numF, 'width': '', bgcolor: '#C238FF' },
+                { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
+            ];
+
+            var index = titlesArr.indexOf(info.answer);
+            optionsArr[index].bgcolor = "#1EC51D";
+        } else if(info.answerType == 2) {
+            // 多选
+            titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '答对', '未答题'];
+            optionsArr = [
+                { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
+                { 'value': info.numB, 'width': '', bgcolor: '#FFFD38' },
+                { 'value': info.numC, 'width': '', bgcolor: '#D71616' },
+                { 'value': info.numD, 'width': '', bgcolor: '#D68A16' },
+                { 'value': info.numE, 'width': '', bgcolor: '#7A38FF' },
+                { 'value': info.numF, 'width': '', bgcolor: '#C238FF' },
+                { 'value': info.rightNum, 'width': '', bgcolor: '#1EC51D' },
+                { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
+            ];
+        }
+
+        var compareArr = [];
+        for(var m = 0; m < optionsArr.length; m++) {
+            compareArr.push(optionsArr[m].value);
+        }
+        compareArr.sort(that.compare);
+        var max = compareArr.pop();
+        for(var i = 0; i < optionsArr.length; i++) {
+            optionsArr[i].width = parseInt(optionsArr[i].value)/parseInt(max) * 90;
+        }
+
+        var str = '';
+        str += '<div class="chart">';
+        str += '<div class="chart-box flex-h">';
+        str += '<div class="time">答题时间：00:'+ that.transMinute(Math.floor(info.costTime/60)) +':'+ that.transSecond(info.costTime%60) +'</div>';
+        str += '<div class="titles">';
+        for(var j = 0; j < titlesArr.length; j++) {
+            str += '<p class="titles-item">'+ titlesArr[j] +'</p>';
+        }
+        str += '</div>';
+        str += '<div class="options flex-a-i">';
+        for(var k = 0; k < optionsArr.length; k++) {
+            str += '<div class="options-item flex-h">';
+            str += '<p class="color-line" style="width: '+ optionsArr[k].width +'%; background: '+ optionsArr[k].bgcolor +';"></p>';
+            str += '<p class="text">'+ optionsArr[k].value +'人</p>';
+            str += '</div>';
+        }
+        str += '</div>';
+        str += '</div>';
+        str += '</div>';
+
+        that.$screen.find('.state-after').remove();
+        that.$screen.append(str);
+    },
+
+    // 显示答题学生列表
+    showStudent: function() {
+        var data = JSON.parse(localStorage.getItem('answerStudent')),
+            text = '';
+
+        switch (parseInt(data.answerType)) {
+            case 0:
+                text = "选择✕的学生";
+                break;
+            case 1:
+                text = "选择✓的学生";
+                break;
+            case 2:
+                text = "答对(" + data.rightAnswer + ")的学生";
+                break;
+            case 4:
+                text = "未答题的学生";
+                break;
+            default:
+                text = "选择" + data.answerType + "的学生"
+        }
+
+        var str = '';
+        str += '<div class="student">';
+        str += '<div class="student-box">';
+        str += "<h2>" + text + "</h2>";
+        for(var i = 0; i < data.studentList.length; i++) {
+            str += '<p>'+ data.studentList[i].name +'</p>';
+        }
+        str += '</div>';
+        str += '</div>';
+
+        that.$screen.find('.chart').remove();
+        that.$screen.append(str);
+    },
+
+    // 显示班级绑卡界面
+    showBindCard: function() {
+        var data = JSON.parse(localStorage.getItem('bindcardData')),
+            cardList = ['A', 'B', 'C', 'D', 'E', 'F', '', '1', '0'],
+            cardSelectList = data.code.split(''),
+            cardHeaderItem = that.$bindcard.find('.card-header .card-item'),
+            cardMainItem = that.$bindcard.find('.card-main .card-item');
+
+        cardMainItem.removeClass('selected');
+        for (var i = 0; i < cardSelectList.length; i++) {
+            if(cardSelectList[i] == '0') {
+                cardHeaderItem.eq(i).html('✕');
+            } else if(cardSelectList[i] == '1') {
+                cardHeaderItem.eq(i).html('✓');
+            } else {
+                cardHeaderItem.eq(i).html(cardSelectList[i]);
+            }
+
+            var index = cardList.indexOf(cardSelectList[i]);
+            cardMainItem.eq(index).addClass('selected');
+        }
+        that.$bindcard.find(".card-info span").html(data.stuNum),
+        that.$bindcard.show();
+
+        var cardH = that.$bindcard.height(),
+            cardBoxH = that.$bindcard.find('.bindcard-box').height(),
+            scale = cardH/cardBoxH;
+
+        that.$bindcard.find('.bindcard-box').css({
+            '-webkit-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
+               '-moz-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
+                '-ms-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
+                    'transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')'
+        });
+        console.log(data)
+
+        that.$connection.hide();
+        that.$bindlist.hide();
+        that.$bindcard.addClass('bindcard-active').fadeIn(300);
+    },
+
+    // 显示绑卡学生列表
+    showBindStudent: function() {
+        var data = JSON.parse(localStorage.getItem('bindStudentData'));
+
+        if(data.studentList && data.studentList.length > 0) {
+            var temp = '';
+            for(var i = 0; i < data.studentList.length; i++) {
+                temp += '<li class="list-item">'+ data.studentList[i] +'</li>';
+            }
+
+            that.$bindlist.find('ul').html(temp);
+        } else {
+            that.$bindlist.find('ul').html('<li class="no-data">暂无绑定的学生</li>');
+        }
+
+        that.$bindcard.removeClass('bindcard-active').hide();
+        that.$bindlist.fadeIn(300);
+    },
+
     // loading
     showLoading: function(text) {
         that.$loading.find('.text').html(text);
@@ -592,15 +712,30 @@ var INDEX = {
 
     // 答题计时
     timeClock: function() {
-        that.clock = 0;
-        that.seconds = 0;
-        that.minutes = 0;
+        clearInterval(that.XF);
+        if(localStorage.getItem('timeClock')) {
+            var cTimeClock = JSON.parse(localStorage.getItem('timeClock')),
+                cMinutes = parseInt(cTimeClock.minutes),
+                cSeconds = parseInt(cTimeClock.seconds);
+
+            that.clock = cMinutes * 60 + cSeconds;
+        } else {
+            that.clock = 0;
+            that.seconds = 0;
+            that.minutes = 0;
+        }
 
         that.XF = setInterval(function() {
             that.clock += 1;
             that.seconds = that.clock%60;
             that.minutes = Math.floor(that.clock/60);
-            that.$screen.find('.state-doing .text-time').html('答题时间：00:'+ that.transMinute(that.minutes) +':'+ that.transSecond(that.seconds));
+            var time = {
+                minutes: that.transMinute(that.minutes),
+                seconds: that.transSecond(that.seconds)
+            };
+            that.$screen.find('.state-doing .text-time').html('答题时间：00:'+ time.minutes +':'+ time.seconds);
+
+            localStorage.setItem('timeClock', JSON.stringify(time));
         }, 1000);
     },
 
