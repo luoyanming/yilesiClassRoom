@@ -410,6 +410,9 @@ var INDEX = {
             that.$courseImg.attr('src', picurl).show();
             that.$screen.fadeIn(200);
 
+            if(!localStorage.getItem('sessionType') || localStorage.getItem('sessionType') == '0') {
+                that.showProblem(); // 课件题目
+            }
             that.canvasInit();
 
             if(piclist) {
@@ -420,11 +423,15 @@ var INDEX = {
 
     // 显示缓存的内容
     showSessionMask: function() {
+        if(!localStorage.getItem('sessionType')) {
+            return false;
+        }
+
         var sType = parseInt(localStorage.getItem('sessionType'));
 
         switch (sType) {
             case 0: //课件无答题
-                that.showProblem();
+                
                 break;
             case 2: //开始答题
                 that.startAnswer();

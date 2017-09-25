@@ -7,6 +7,7 @@ var INDEX = {
         localStorage.setItem('sid', '');
         localStorage.setItem('token', '');
 
+        localStorage.removeItem('sessionType');
         localStorage.removeItem('picUrl');
         localStorage.removeItem('answerType');
         localStorage.removeItem('isAnswer');
