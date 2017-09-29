@@ -446,7 +446,6 @@ var INDEX = {
                 that.showStudent();
                 break;
             case 80: //显示绑卡界面
-                console.log(80)
                 that.showBindCard();
                 break;
             case 81: //显示绑卡学生列表
@@ -539,10 +538,11 @@ var INDEX = {
 
         if(info.answerType == 3) {
             // 判断题
-            titlesArr = ["✓", "✕", '未答题'];
+            titlesArr = ["✓", "✕", '错答', '未答题'];
             optionsArr = [
                 { 'value': info.numTrue, 'width': '', bgcolor: '#38A0FF' },
                 { 'value': info.numFalse, 'width': '', bgcolor: '#FFFD38' },
+                { 'value': info.wrongNum, 'width': '', bgcolor: '#D9D9D9' },
                 { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
             ];
 
@@ -553,7 +553,7 @@ var INDEX = {
             }
         } else if(info.answerType == 1) {
             // 单选
-            titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '未答题'];
+            titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '错答', '未答题'];
             optionsArr = [
                 { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
                 { 'value': info.numB, 'width': '', bgcolor: '#FFFD38' },
@@ -561,6 +561,7 @@ var INDEX = {
                 { 'value': info.numD, 'width': '', bgcolor: '#D68A16' },
                 { 'value': info.numE, 'width': '', bgcolor: '#7A38FF' },
                 { 'value': info.numF, 'width': '', bgcolor: '#C238FF' },
+                { 'value': info.wrongNum, 'width': '', bgcolor: '#D9D9D9' },
                 { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
             ];
 
@@ -568,7 +569,7 @@ var INDEX = {
             optionsArr[index].bgcolor = "#1EC51D";
         } else if(info.answerType == 2) {
             // 多选
-            titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '答对', '未答题'];
+            titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '答对', '错答', '未答题'];
             optionsArr = [
                 { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
                 { 'value': info.numB, 'width': '', bgcolor: '#FFFD38' },
@@ -577,6 +578,7 @@ var INDEX = {
                 { 'value': info.numE, 'width': '', bgcolor: '#7A38FF' },
                 { 'value': info.numF, 'width': '', bgcolor: '#C238FF' },
                 { 'value': info.rightNum, 'width': '', bgcolor: '#1EC51D' },
+                { 'value': info.wrongNum, 'width': '', bgcolor: '#D9D9D9' },
                 { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
             ];
         }
@@ -632,6 +634,9 @@ var INDEX = {
                 break;
             case 4:
                 text = "未答题的学生";
+                break;
+            case 7:
+                text = "错答的学生";
                 break;
             default:
                 text = "选择" + data.answerType + "的学生"
