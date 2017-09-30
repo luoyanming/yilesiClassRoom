@@ -40,7 +40,18 @@ var INDEX = {
 
         $(window).unbind('resize');
         $(window).on('resize', function() {
-            that.webSocketInit();
+            // 登陆成功之后的操作
+            if(localStorage.getItem('picUrl')) {
+                // 如果有缓存（表示上课过程中刷新页面）
+                that.showImage(localStorage.getItem('picUrl'), localStorage.getItem('answerType'), localStorage.getItem('isAnswer'));
+            } else {
+                that.$connection.fadeIn(200);
+                that.$screen.fadeIn(200);
+                that.$loading.fadeOut(200);
+            }
+
+            // 刷新页面，图片显示完成后显示缓存内容
+            that.showSessionMask();
         });
     },
     UIInit: function() {
@@ -912,7 +923,7 @@ var INDEX = {
     // 点击全屏按钮事件
     buttonFullscreenBind: function() {
         var isFullscreen = that.isFullscreenForNoScroll();
-        
+
         if(isFullscreen) {
             that.cancleFullscreen();
         } else {
