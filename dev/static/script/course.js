@@ -40,7 +40,7 @@ var INDEX = {
 
         $(window).unbind('resize');
         $(window).on('resize', function() {
-            location.href = location.href;
+            that.webSocketInit();
         });
     },
     UIInit: function() {
@@ -911,12 +911,12 @@ var INDEX = {
 
     // 点击全屏按钮事件
     buttonFullscreenBind: function() {
-        var isFullscreen = that.$buttonFullscreen.attr('data-fullscreen');
-        if(isFullscreen == 'true') {
+        var isFullscreen = that.isFullscreenForNoScroll();
+        
+        if(isFullscreen) {
             that.cancleFullscreen();
         } else {
             that.launchFullscreen(document.documentElement);
-            that.$buttonFullscreen.attr('data-fullscreen', 'true');
         }
     },
 
@@ -931,8 +931,6 @@ var INDEX = {
         } else if(element.msRequestFullscreen) {
             element.msRequestFullscreen();
         }
-
-        that.$buttonFullscreen.attr('data-fullscreen', 'true');
     },
 
     // 退出全屏
@@ -946,8 +944,26 @@ var INDEX = {
         } else if(document.msExitFullscreen) {
             document.msExitFullscreen();
         }
+    },
 
-        that.$buttonFullscreen.attr('data-fullscreen', 'false');
+    // 判断无滚动条页面是否全屏
+    isFullscreenForNoScroll: function(){
+        var explorer = window.navigator.userAgent.toLowerCase();
+        if(explorer.indexOf('chrome') > 0) {
+            // webkit
+            if (document.body.scrollHeight === window.screen.height && document.body.scrollWidth === window.screen.width) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            // IE 9+  fireFox
+            if (window.outerHeight === window.screen.height && window.outerWidth === window.screen.width) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 };
 
