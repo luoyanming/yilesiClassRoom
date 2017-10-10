@@ -38,6 +38,9 @@ var INDEX = {
         that.$buttonLesson = $('#button-lesson');
         that.$textClass = $('#text-class');
         that.$textLesson = $('#text-lesson');
+        that.$buttonDownload = $('#button-download');
+        that.$buttonDownloadClose = $('#button-download-close');
+        that.$downloadModal = $('#modal-download');
 
         if(that.getQueryString('from') == 'lesson') {
             that.flag = 'lesson';
@@ -244,6 +247,15 @@ var INDEX = {
                     }
                 });
             }
+        });
+
+        // 应用下载按钮
+        that.$buttonDownload.on('click', function() {
+            that.$downloadModal.fadeToggle();
+        });
+
+        that.$buttonDownloadClose.on('click', function() {
+            that.$downloadModal.fadeToggle();
         });
     },
 
