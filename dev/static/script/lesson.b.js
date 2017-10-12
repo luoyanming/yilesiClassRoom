@@ -24,8 +24,10 @@ $(function() {
             that.$loading = $('.loading');
             that.$onlyone = $('.onlyone');
             that.$list = $('.list');
+            that.$mask = $('.mask');
+            that.$progressBar = $('#progressBar');
+            that.$progressText = $('#progressText');
             that.$update = $('.update');
-            that.courseIdArr = [];
 
             that.$buttonLogout.on("click", function() {
                 that.sendMsg({
@@ -138,63 +140,16 @@ $(function() {
                 location.href = './index.html'
             } else if(res.code == 10009) {
                 // 刷新list
-                if($('.onlyone').css('display') == 'block' ) {
-                    // 无课程时
-                    that.getCourseList();
-                    return false;
-                }
-
-                var uploadWrap = $('#form-' + res.data.courseId).parent().parent();
-
-                if(res.data.addType == 0) {
-                    // edit or web add
-                    if(res.data.picUrl == '') {
-                        uploadWrap.find('.thumb').attr('src', './static/images/course-default.png');
-                    } else {
-                        uploadWrap.find('.thumb').attr('src', res.data.picUrl);
-                    }
-
-                    if(that.courseIdArr.indexOf(res.data.courseId) == -1) {
-                        // 如果课程不存在，app新增
-                        that.courseIdArr.push(res.data.courseId);
-                        that.courseAppAddUI(res.data.courseId, res.data.picUrl, res.data.courseName);
-                    }
-                } else if(res.data.addType == 1) {
-                    that.courseIdArr.push(res.data.courseId);
-                    that.courseAppAddUI(res.data.courseId, res.data.picUrl, res.data.courseName);
-                } else if(res.data.addType == 2) {
-                    // web add
-                    that.courseIdArr.push(res.data.courseId);
-                    if(res.data.picUrl == '') {
-                        uploadWrap.find('.thumb').attr('src', './static/images/course-default.png');
-                    } else {
-                        uploadWrap.find('.thumb').attr('src', res.data.picUrl);
-                    }
-                } else if(res.data.addType == 4) {
-                    // app delete
-                    $('#form-' + res.data.courseId).parent().parent().parent().remove();
-
-                    for(var i = 0; i < that.courseIdArr.length; i++) {
-                        if(res.data.courseId == that.courseIdArr[i]) {
-                            that.courseIdArr.splice(i, 1);
-                        }
-                    }
-                }
-
-                if(res.data.courseName.length > 8) {
-                    uploadWrap.parent().find('.title').html(res.data.courseName.substring(0, 8) +'...');
+                if(res.data.refresh) {
+                    // that.showMsg("上传成功！正在同步列表...", "success");
+                    that.$mask.fadeOut(200);
+                    that.$loading.fadeIn(200);
                 } else {
-                    uploadWrap.parent().find('.title').html(res.data.courseName);
-                }
-
-                $('#progress-' + res.data.courseId).remove();
-                $('#load-' + res.data.courseId).remove();
-                
-
-                if(!res.data.refresh) {
                     that.$update.fadeIn(300);
                     that.updateBtnSureBind();
                 }
+
+                that.getCourseList();
             } else if(res.code == 80011) {
                 // 关闭同屏
                 ws.close();
@@ -272,10 +227,12 @@ $(function() {
             temp += '<p class="title">新建课程</p>';
             temp += '</li>';
             for(var i = 0; i < dataList.length; i++) {
-                that.courseIdArr.push(dataList[i].id);
-
                 temp += '<li class="list-item">';
-                temp += '<div class="upload-wrap">';
+                if(dataList[i].picUrl){
+                    temp += '<div class="upload-wrap">';
+                } else {
+                    temp += '<div class="upload-wrap upload-wrap-nodata">';
+                }
                 if(dataList[i].picUrl == '') {
                     temp += '<img src="./static/images/course-default.png" class="thumb">';
                 } else {
@@ -310,14 +267,13 @@ $(function() {
         inputFileBind: function() {
             var inputfile = $('form .input-file');
 
-            inputfile.unbind('change');
+            // inputfile.unbind('change');
             inputfile.change(function() {
                 var formWrap = $(this).parent(),
                     formData = new FormData(),
                     courseID = formWrap.attr('data-id');
 
-                var fileName = $(this)[0].files[0].name,
-                    fileTypeArr = fileName.split('.'),
+                var fileTypeArr = $(this)[0].files[0].name.split('.'),
                     fileType = fileTypeArr[fileTypeArr.length - 1];
                 if(fileType !== 'ppt' && fileType !== 'pptx') {
                     that.showMsg('请上传 .ppt 或 .pptx 格式的文件！', 'error');
@@ -331,10 +287,14 @@ $(function() {
 
                 if(courseID != 0) {
                     // 编辑课程
+
+                    // 向服务端发送上传开始请求
+                    // that.sendUploadMsg(courseID, 'start');
+
                     formData.append('tempCourseId', courseID);
                     formData.append('courseId', courseID);
 
-                    that.uploadppt(0, courseID, fileTypeArr[0], formData);
+                    that.uploadppt(formData);
                 } else {
                     formData.append('tempCourseId', 0);
 
@@ -352,7 +312,7 @@ $(function() {
                             if(res.code == 0) {
                                 formData.append('courseId', res.data.courseId);
 
-                                that.uploadppt(1, res.data.courseId, fileTypeArr[0], formData);
+                                that.uploadppt(formData);
                             } else {
                                 that.showMsg(res.errorInfo, 'error');
                             }
@@ -367,7 +327,7 @@ $(function() {
         },
 
         // 上传ppt
-        uploadppt: function(type, id, name, formData) {
+        uploadppt: function(formData) {
             $.ajax({
                 url: CONFIG.apiOnline + '/course/upload/ppt',
                 type: 'POST',
@@ -381,126 +341,40 @@ $(function() {
                     var xhr = $.ajaxSettings.xhr();
 
                     xhr.upload.onloadstart = function(){
-                        if(type == 0) {
-                            // edit
-                            $('#form-' + id).parent().parent().append(that.progressUI(id));
-                        } else if(type == 1) {
-                            // add
-                            $('#form-0').attr('data-id', id).attr('id', 'form-' + id);
-                            $('#file-0').attr('id', 'file-' + id);
-
-                            if($('.onlyone').css('display') == 'block' ) {
-                                // 无课程时新增
-                                $('#form-' + id).parent().parent().find('.text').hide();
-                                $('#form-' + id).parent().parent().append(that.progressUI(id));
-                                $('#form-' + id).parent().parent().prepend('<img src="./static/images/course-default.png" class="thumb">');
-                            } else {
-                                // 有课程时新增
-                                var temp = '',
-                                    str = '';
-
-                                temp += '<li class="list-item">';
-                                temp += '<div class="upload-wrap">';
-                                temp += '<div class="file-wrap">';
-                                temp += that.formUI('0');
-                                temp += '</div>';
-                                temp += '</div>';
-                                temp += '<p class="title">新建课程</p>';
-                                temp += '</li>';
-
-
-                                str += '<img src="./static/images/course-default.png" class="thumb">';
-                                str += '<div class="mask-plus"></div>';
-
-                                $('#form-' + id).parent().parent().append(that.progressUI(id));
-                                $('#form-' + id).parent().parent().prepend(str);
-                                $('#form-' + id).parent().parent().parent().find('.title').html(name);
-
-                                that.$list.find('ul').prepend(temp);
-                                that.inputFileBind();
-                            }
-                        }
+                        that.$progressBar.css('width' , '1%');
+                        that.$progressText.html("正在上传：<span >0%</span>");
+                        that.$mask.fadeIn(200);
                     };
 
-                    xhr.upload.onprogress = function(evt) {
-                        that.onprogress(id, evt);
-                    }
+                    xhr.upload.onprogress = that.onprogress;
 
                     return xhr;
                 },  
                 success: function (res) {
                     if(res.code == 0) {
-                        $('#form-' + id).parent().parent().append(that.loadUI(id));
+                        that.showMsg('上传成功！正在同步列表...', 'success');
+                        // that.$mask.fadeOut(200);
+                        // that.$loading.fadeIn(200);
 
-                        $('#progress-' + id).hide();
-                        $('#load-' + id).fadeIn();
+                        // that.getCourseList();
                     } else {
                         that.showMsg(res.errorInfo, 'error');
                     }
+
+                    // that.sendUploadMsg(courseID, 'end');
                 },
                 error: function () {
                     that.showMsg('文件上传失败！请重试！', 'error');
+                    // that.sendUploadMsg(courseID, 'end');
+                    that.$mask.fadeOut(200);
 
-                    var formParent = $('#form-' + id).parent();
-                    $('#form-' + id).remove();
-                    formParent.html(that.formUI(courseID));
-                    formParent.parent().find('.text').show();
+                    var formBox = formWrap.parent();
+                    formWrap.remove();
+                    formBox.html(that.formUI(courseID));
 
                     that.inputFileBind();
                 }
             });
-        },
-
-        // 创建课程上传进度条
-        progressUI: function(id) {
-            var ptr = '';
-
-            ptr += '<div class="mask-progress" id="progress-'+ id +'">';
-            ptr += '<div class="progress-box">';
-            ptr += '<div class="progress-bar" style="width: 1%;"></div>';
-            ptr += '</div>';
-            ptr += '<div class="progress-text">0%</div>';
-            ptr += '</div>';
-
-            return ptr;
-        },
-
-        // 创建课程生成loading
-        loadUI: function(id) {
-            var ptr = '';
-
-            ptr += '<div class="load" id="load-'+ id +'">';
-            ptr += '<div class="load-icon"></div>';
-            ptr += '<div class="load-text">课件生成中...</div>';
-            ptr += '</div>';
-
-            return ptr;
-        },
-
-        // app 新增时创建课程UI
-        courseAppAddUI: function(id, picUrl, name) {
-            var temp = '';
-
-            temp += '<li class="list-item">';
-            temp += '<div class="upload-wrap">';
-            if(picUrl == '') {
-                temp += '<img src="./static/images/course-default.png" class="thumb">';
-            } else {
-                temp += '<img src="'+ picUrl +'" class="thumb">';
-            }
-            temp += '<div class="mask-plus"></div>';
-            temp += '<div class="file-wrap">';
-            temp += that.formUI(id);
-            temp += '</div>';
-            temp += '</div>';
-            if(name.length > 8) {
-                temp += '<p class="title">'+ name.substring(0, 8) +'...</p>';
-            } else {
-                temp += '<p class="title">'+ name +'</p>';
-            }
-            temp += '</li>';
-
-            that.$list.find('ul li').eq(0).after(temp);
         },
 
         // 发送上传开始和结束请求
@@ -519,14 +393,19 @@ $(function() {
         },
 
         // 上传进度条
-        onprogress: function(id, evt) {
+        onprogress: function(evt) {
             var loaded = evt.loaded,
                 total = evt.total,
-                per = Math.floor(100*loaded/total),
-                progress = $('#progress-' + id);
+                per = Math.floor(100*loaded/total);
 
-            progress.find('.progress-bar').css('width' , per + '%');
-            progress.find('.progress-text').html(per + '%');
+            that.$progressBar.css('width' , per + '%');
+            that.$progressText.html(per + '%');
+
+            if(per == 100) {
+                that.$progressText.html("正在生成课程，请您稍作等待...");
+            } else {
+                that.$progressText.html("正在上传：<span >" + s + "%</span>");
+            }
         },
 
         //
