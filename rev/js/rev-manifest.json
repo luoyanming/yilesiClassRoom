@@ -1,6 +1,7 @@
 {
-  "static/script/course.js": "static/script/course-4086364d5d.js",
-  "static/script/index.js": "static/script/index-b857079119.js",
+  "static/script/course.js": "static/script/course-c41c00d57e.js",
+  "static/script/index.js": "static/script/index-bae371ed62.js",
   "static/script/lesson.b.js": "static/script/lesson-5480d98b03.b.js",
-  "static/script/lesson.js": "static/script/lesson-0dc0abb1ee.js"
+  "static/script/lesson.js": "static/script/lesson-ecc6fe1294.js",
+  "static/script/util.js": "static/script/util-9640321b94.js"
 }

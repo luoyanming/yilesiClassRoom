@@ -57,16 +57,24 @@
     .screen{
         @include position(absolute, 4, 0, 0, 0, 0);
 
-        .course-img{
-            @include position(absolute, 10, 50%, none, none, 50%);
-            @include translate(-50%, -50%, 0);
-            max-width: 100%;
-            max-height: 100%;
+        .imgbox{
+            @include position(absolute, 10, 0, 0, 0, 0);
+            -webkit-transform-origin: left top;
+                    transform-origin: left top;
+
+            .course-img{
+                @include position(absolute, 10, 50%, none, none, 50%);
+                @include translate(-50%, -50%, 0);
+                max-width: 100%;
+                max-height: 100%;
+            }
         }
 
         .canvas{
             @include position(absolute, 15, 0, 0, 0, 0);
             overflow: hidden;
+            -webkit-transform-origin: left top;
+                    transform-origin: left top;
 
             canvas{
                 @include position(absolute, 16, 50%, none, none, 50%);

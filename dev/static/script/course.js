@@ -18,6 +18,7 @@ var INDEX = {
             localStorage.removeItem('bindcardData');
             localStorage.removeItem('bindStudentData');
             localStorage.removeItem('canvasData');
+            localStorage.removeItem('zoom');
         }
 
         that = this;
@@ -210,6 +211,8 @@ var INDEX = {
             that.$loading.fadeOut(200);
         } else if(res.code == 80003) {
             // 课件图片
+            localStorage.removeItem('zoom');
+            
             localStorage.setItem('sessionType', '0');
             if(res.data.picList) {
                 that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer, res.data.picList);
@@ -363,6 +366,27 @@ var INDEX = {
                     }
                 }
             }
+        } else if(res.code == 80019) {
+            // 放大漫游
+            localStorage.setItem('zoom', JSON.stringify(res.data.zoomObj));
+
+            that.zoomAndMove();
+        } else if(res.code == 80020) {
+            // 清除画布
+            var canvasData = JSON.parse(localStorage.getItem('canvasData')),
+                picUrl = localStorage.getItem('picUrl');
+
+            for(var i = 0; i < canvasData.length; i++) {
+                if(canvasData[i].picUrl == picUrl) {
+                    canvasData[i].data.lines = [];
+                    localStorage.setItem('canvasData', JSON.stringify(canvasData));
+
+                    var canvas = document.getElementById('canvas'),
+                        context = canvas.getContext('2d');
+
+                    context.clearRect(0, 0, $('#canvas').width(), $('#canvas').height());
+                }
+            }
         }
     },
 
@@ -388,6 +412,10 @@ var INDEX = {
         that.$screen.find('.state-after').remove();
         that.$screen.find('.chart').remove();
         that.$screen.find('.student').remove();
+
+        if(localStorage.getItem('zoom')) {
+            that.zoomAndMove();
+        }
 
         var img = new Image(),
             pageWidth = window.innerWidth,
@@ -884,6 +912,24 @@ var INDEX = {
                 return;
             }
         }
+    },
+
+    // 缩放和漫游
+    zoomAndMove: function() {
+        var zoom = JSON.parse(localStorage.getItem('zoom'));
+
+        var x = zoom.translateX / zoom.width / zoom.zoom * 100,
+            y = zoom.translateY / zoom.height / zoom.zoom * 100;
+
+        $('.imgbox').css({
+            '-webkit-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)',
+            '-webkit-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)'
+        });
+
+        $('.canvas').css({
+            '-webkit-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)',
+            '-webkit-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)'
+        });
     },
 
     // 转换 minute

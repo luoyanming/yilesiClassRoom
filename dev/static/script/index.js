@@ -18,6 +18,7 @@ var INDEX = {
         localStorage.removeItem('bindcardData');
         localStorage.removeItem('bindStudentData');
         localStorage.removeItem('canvasData');
+        localStorage.removeItem('zoom');
 
         that = this;
         // 心跳包计数
