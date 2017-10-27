@@ -20,6 +20,7 @@ var INDEX = {
             localStorage.removeItem('canvasData');
             localStorage.removeItem('audioTime');
             localStorage.removeItem('zoom');
+            localStorage.removeItem('scale');
         }
 
         that = this;
@@ -206,12 +207,22 @@ var INDEX = {
                     audio.play();
                     break;
                 case 4: // 前进
-                    audio.currentTime = audio.currentTime + parseInt(res.data.seconds);
+                    if(audio.currentTime > audio.duration - parseInt(res.data.seconds)) {
+                        audio.currentTime = audio.duration;
+                    } else {
+                        audio.currentTime = audio.currentTime + parseInt(res.data.seconds);
+                    }
+
                     that.setStorageAudioTime(audio.currentTime);
                     that.sendAudioMsg(4);
                     break;
                 case 5: // 后退
-                    audio.currentTime = audio.currentTime - parseInt(res.data.seconds);
+                    if(audio.currentTime < parseInt(res.data.seconds)) {
+                        audio.currentTime = 0;
+                    } else {
+                        audio.currentTime = audio.currentTime - parseInt(res.data.seconds);
+                    }
+                    
                     that.setStorageAudioTime(audio.currentTime);
                     that.sendAudioMsg(5);
                     break;
@@ -232,6 +243,7 @@ var INDEX = {
             // localStorage.removeItem('bindStudentData');
             localStorage.removeItem('canvasData');
             localStorage.removeItem('audioTime');
+            localStorage.removeItem('scale');
 
             that.$connection.fadeIn(200);
             that.$screen.find('#canvas').remove();
