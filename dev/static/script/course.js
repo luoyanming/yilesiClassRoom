@@ -18,6 +18,7 @@ var INDEX = {
             localStorage.removeItem('bindcardData');
             localStorage.removeItem('bindStudentData');
             localStorage.removeItem('canvasData');
+            localStorage.removeItem('audioTime');
             localStorage.removeItem('zoom');
         }
 
@@ -56,11 +57,14 @@ var INDEX = {
         });
     },
     UIInit: function() {
+        that.audioCurrenttimeTimeout;
+
         that.$course = $('#course');
         that.$connection = $('#connection');
         that.$loading = $('#loading');
         that.$screen = $('#screen');
         that.$courseImg = $('#courseImg');
+        that.$audioBox = $('#audioBox');
         that.$toolbar = $('#toolbar');
         that.$buttonRefresh = $('#button-refresh');
         that.$buttonFullscreen = $('#button-fullscreen');
@@ -185,6 +189,35 @@ var INDEX = {
             ws.close();
             alert('您的账号已在其它地点登录，将被强制下线！');
             location.href = './index.html?from=class';
+        } else if(res.code == 10014) {
+            // 音频操作
+            var audio = document.getElementById('audio');
+
+            switch (res.data.opType) {
+                case 1: // 开始
+                    audio.play();
+                    break;
+                case 2: // 暂停
+                    audio.pause();
+                    break;
+                case 3: // 重新播放
+                    audio.currentTime = 0;
+                    that.setStorageAudioTime(0);
+                    audio.play();
+                    break;
+                case 4: // 前进
+                    audio.currentTime = audio.currentTime + parseInt(res.data.seconds);
+                    that.setStorageAudioTime(audio.currentTime);
+                    that.sendAudioMsg(4);
+                    break;
+                case 5: // 后退
+                    audio.currentTime = audio.currentTime - parseInt(res.data.seconds);
+                    that.setStorageAudioTime(audio.currentTime);
+                    that.sendAudioMsg(5);
+                    break;
+                default:
+                    return;
+            }
         } else if(res.code == 80002) {
             // 结束录制
             localStorage.removeItem('sessionType');
@@ -198,6 +231,7 @@ var INDEX = {
             // localStorage.removeItem('bindcardData');
             // localStorage.removeItem('bindStudentData');
             localStorage.removeItem('canvasData');
+            localStorage.removeItem('audioTime');
 
             that.$connection.fadeIn(200);
             that.$screen.find('#canvas').remove();
@@ -207,10 +241,14 @@ var INDEX = {
             that.$screen.find('.chart').remove();
             that.$screen.find('.student').remove();
             that.$courseImg.hide();
+            that.$audioBox.hide();
+            that.$audioBox.find('audio').remove();
             that.$screen.fadeIn(200);
             that.$loading.fadeOut(200);
         } else if(res.code == 80003) {
             // 课件图片
+            clearInterval(that.audioCurrenttimeTimeout);
+
             localStorage.removeItem('zoom');
             
             localStorage.setItem('sessionType', '0');
@@ -412,52 +450,214 @@ var INDEX = {
         that.$screen.find('.state-after').remove();
         that.$screen.find('.chart').remove();
         that.$screen.find('.student').remove();
+        that.$courseImg.hide();
+        that.$audioBox.find('audio').remove();
+        that.$audioBox.hide();
 
         if(localStorage.getItem('zoom')) {
             that.zoomAndMove();
         }
 
-        var img = new Image(),
-            pageWidth = window.innerWidth,
-            pageHeight = window.innerHeight - 42,
-            pageBL;
+        // 判断课件类型是图片还是MP3
+        var picArr = picurl.split('.'),
+            picType = picArr[picArr.length - 1];
 
-        if(typeof pageWidth != 'number') {
-            if(document.compatMode == 'CSS1Compat') {
-                pageWidth = document.documentElement.clientWidth;
-                pageHeight = document.documentElement.clientHeight - 42;
-            } else {
-                pageWidth = document.body.clientWidth;
-                pageHeight = document.body.clientHeight - 42;
+        if(picType == 'mp3') {
+            // 音频
+            that.$audioBox.append('<audio src="'+ picurl +'" preload="metadata" id="audio"></audio>');
+
+            that.handleAudioEvents();
+        } else {
+            // 图片
+            var img = new Image(),
+                pageWidth = window.innerWidth,
+                pageHeight = window.innerHeight - 42,
+                pageBL;
+
+            if(typeof pageWidth != 'number') {
+                if(document.compatMode == 'CSS1Compat') {
+                    pageWidth = document.documentElement.clientWidth;
+                    pageHeight = document.documentElement.clientHeight - 42;
+                } else {
+                    pageWidth = document.body.clientWidth;
+                    pageHeight = document.body.clientHeight - 42;
+                }
+            }
+
+            pageBL = pageWidth/pageHeight;
+            img.src = picurl;
+            img.onload = function() {
+                var imgW = img.width,
+                    imgH = img.height,
+                    imgBL = imgW/imgH;
+
+                if(imgBL > pageBL) {
+                    that.$courseImg.css({ 'width': '100%', 'height': 'auto'});
+                } else {
+                    that.$courseImg.css({ 'height': '100%', 'width': 'auto'});
+                }
+                
+                that.$courseImg.attr('src', picurl).show();
+
+                that.afterShowImage();
             }
         }
 
-        pageBL = pageWidth/pageHeight;
-        img.src = picurl;
-        img.onload = function() {
-            var imgW = img.width,
-                imgH = img.height,
-                imgBL = imgW/imgH;
-
-            if(imgBL > pageBL) {
-                that.$courseImg.css({ 'width': '100%', 'height': 'auto'});
-            } else {
-                that.$courseImg.css({ 'height': '100%', 'width': 'auto'});
-            }
-
-            that.$loading.fadeOut(200);
-            that.$courseImg.attr('src', picurl).show();
-            that.$screen.fadeIn(200);
-
-            if(!localStorage.getItem('sessionType') || localStorage.getItem('sessionType') == '0') {
-                that.showProblem(); // 课件题目
-            }
-            that.canvasInit();
-
-            if(piclist) {
-                that.preloadImages(piclist);
-            }
+        if(piclist) {
+            that.preloadImages(piclist);
         }
+    },
+
+    // 音频事件绑定
+    handleAudioEvents: function() {
+        var audio = document.getElementById('audio');
+
+        // 模拟播放、暂停
+        // that.$screen.unbind('click');
+        // that.$screen.on('click', function() {
+        //     if(audio.paused) {
+        //         audio.play(); 
+        //     } else {
+        //         audio.pause();
+        //     }
+        // });
+
+        // 准备就绪
+        audio.onloadedmetadata = function() {
+            if(that.getStorageAudioTime()) {
+                audio.currentTime = that.getStorageAudioTime();
+            } 
+
+            that.showDuration(audio.duration);
+
+            that.showCurrentTime(audio.currentTime);
+            that.setStorageAudioTime(audio.currentTime);
+            that.$audioBox.find('.progress-bar').css('width', audio.currentTime / audio.duration * 100 + '%');
+            // 定时获取当前播放时间，显示进度条
+            clearInterval(that.audioCurrenttimeTimeout);
+            that.audioCurrenttimeTimeout = setInterval(function () {
+                that.showCurrentTime(audio.currentTime);
+                that.setStorageAudioTime(audio.currentTime);
+                that.$audioBox.find('.progress-bar').css('width', audio.currentTime / audio.duration * 100 + '%');
+            }, 1000);
+
+            that.sendAudioMsg(6);
+
+            that.$audioBox.show();
+            that.afterShowImage();
+        };
+
+        // 开始播放
+        audio.onplay = function() {
+            that.sendAudioMsg(1);
+            that.showTipsText('正在播放中...');
+        };
+
+        // 暂停
+        audio.onpause = function() {
+            that.sendAudioMsg(2);
+            that.showTipsText('暂停中...');
+        };
+
+        // 结束
+        audio.onended = function() {
+            audio.currentTime = 0;
+            that.setStorageAudioTime(0);
+            that.sendAudioMsg(2);
+            that.showTipsText('播放结束...');
+        };
+    },
+
+    // 发送音频状态
+    sendAudioMsg: function(type) {
+        // 1开始 2暂停 3重新播放 4前进 5后退 6准备就绪
+        that.sendMsg({
+            "bizType": 10014,
+            "sid": that.sid,
+            "token": that.token,
+            "data": {
+                "sourceType": "web",
+                "mediaType": "audio",
+                "opType": type
+            }
+        });
+    },
+
+    // 缓存音频播放时长
+    setStorageAudioTime: function(time) {
+        var picurl = localStorage.getItem('picUrl'),
+            audioTime = JSON.parse(localStorage.getItem('audioTime'));
+
+        if(audioTime) {
+            for(var i = 0; i < audioTime.length; i++) {
+                if(picurl == audioTime[i].picUrl) {
+                    audioTime[i].time = time;
+                    localStorage.setItem('audioTime', JSON.stringify(audioTime));
+                    return false;
+                }
+            }
+
+            audioTime.push({
+                'picUrl': picurl,
+                'time': time
+            });
+            localStorage.setItem('audioTime', JSON.stringify(audioTime));
+            return false;
+        } else {
+            audioTime = new Array();
+            audioTime.push({
+                'picUrl': picurl,
+                'time': time
+            });
+            localStorage.setItem('audioTime', JSON.stringify(audioTime));
+            return false;
+        }
+    },
+
+    // 获取缓存的音频播放时长
+    getStorageAudioTime: function() {
+        var picurl = localStorage.getItem('picUrl'),
+            audioTime = JSON.parse(localStorage.getItem('audioTime')),
+            time;
+
+        if(audioTime) {
+            for(var i = 0; i < audioTime.length; i++) {
+                if(picurl == audioTime[i].picUrl) {
+                    time =  audioTime[i].time;
+                }
+            }
+        } else {
+            time =  0;
+        }
+
+        return time;
+    },
+
+    // 显示课件之外内容
+    afterShowImage: function() {
+        that.$loading.fadeOut(200);
+        that.$screen.fadeIn(200);
+
+        if(!localStorage.getItem('sessionType') || localStorage.getItem('sessionType') == '0') {
+            that.showProblem(); // 课件题目
+        }
+
+        that.canvasInit();
+    },
+
+    // 显示音频提示内容
+    showTipsText: function(text) {
+        that.$audioBox.find('.text').html(text);
+    },
+
+    // 显示音频时长
+    showDuration: function(time) {
+        that.$audioBox.find('.duration-time').html(that.concatMinuteSecond(time));
+    },
+
+    // 显示音频当前播放时间
+    showCurrentTime: function(time) {
+        that.$audioBox.find('.current-time').html(that.concatMinuteSecond(time));
     },
 
     // 显示缓存的内容
@@ -729,7 +929,6 @@ var INDEX = {
                 '-ms-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
                     'transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')'
         });
-        console.log(data)
 
         that.$connection.hide();
         that.$bindlist.hide();
@@ -795,8 +994,15 @@ var INDEX = {
         var images = [];
 
         for(var i = 0; i < list.length; i++) {
-            images[i] = new Image();
-            images[i].src = list[i];
+            var picArr = list[i].split('.'),
+                picType = picArr[picArr.length - 1];
+
+            if(picType == 'mp3') {
+
+            } else {
+                images[i] = new Image();
+                images[i].src = list[i];
+            }
         }
     },
 
@@ -948,6 +1154,16 @@ var INDEX = {
         } else {
             return second;
         }
+    },
+
+    // 拼接minute second
+    concatMinuteSecond: function(time) {
+        time = parseInt(time);
+
+        var m = Math.floor(time/60),
+            s = time%60;
+
+        return that.transMinute(m) +':'+ that.transSecond(s);
     },
 
     // 比较大小

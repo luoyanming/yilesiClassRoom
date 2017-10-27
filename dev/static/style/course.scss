@@ -70,6 +70,58 @@
             }
         }
 
+        .audiobox{
+            @include position(absolute, 10, 0, 0, 0, 0);
+            -webkit-transform-origin: left top;
+                    transform-origin: left top;
+            @include backgroundImage('../images/icon-audio.png', no-repeat, center, center, 628px, 128px);
+
+            .audiobar{
+                @include position(absolute, 10, none, none, 16px, 50%);
+                margin-left: -285px;
+                width: 570px;
+
+                .text{
+                    font-size: 14px;
+                    color: #888888;
+                    letter-spacing: 0.52px;
+                    line-height: 19px;
+                    text-align: center;
+                }
+
+                .progress-box{
+                    height: 23px;
+                    overflow: hidden;
+
+                    .current-time,
+                    .duration-time{
+                        float: left;
+                        width: 50px;
+                        font-size: 13px;
+                        color: #FFFFFF;
+                        letter-spacing: 0.16px;
+                        line-height: 23px;
+                        text-align: center;
+                    }
+
+                    .progress{
+                        float: left;
+                        width: 470px;
+                        margin-top: 10px;
+                        background: rgba(255,255,255,0.50);
+                        border-radius: 100px;
+
+                        .progress-bar{
+                            height: 3px;
+                            background: #FFFFFF;
+                            border-radius: 100px;
+                            // @include transition(all, 1s, linear, 0);
+                        }
+                    }
+                }
+            }
+        }
+
         .canvas{
             @include position(absolute, 15, 0, 0, 0, 0);
             overflow: hidden;
