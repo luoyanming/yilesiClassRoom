@@ -21,6 +21,8 @@ var INDEX = {
             localStorage.removeItem('audioTime');
             localStorage.removeItem('zoom');
             localStorage.removeItem('scale');
+            $('.imgbox').removeAttr('style');
+            $('.canvas').removeAttr('style');
         }
 
         that = this;
@@ -204,6 +206,7 @@ var INDEX = {
                 case 3: // 重新播放
                     audio.currentTime = 0;
                     that.setStorageAudioTime(0);
+                    that.sendAudioMsg(1);
                     audio.play();
                     break;
                 case 4: // 前进
@@ -214,7 +217,7 @@ var INDEX = {
                     }
 
                     that.setStorageAudioTime(audio.currentTime);
-                    that.sendAudioMsg(4);
+                    that.sendAudioMsg(1);
                     break;
                 case 5: // 后退
                     if(audio.currentTime < parseInt(res.data.seconds)) {
@@ -224,7 +227,7 @@ var INDEX = {
                     }
                     
                     that.setStorageAudioTime(audio.currentTime);
-                    that.sendAudioMsg(5);
+                    that.sendAudioMsg(1);
                     break;
                 default:
                     return;
@@ -257,6 +260,8 @@ var INDEX = {
             that.$audioBox.find('audio').remove();
             that.$screen.fadeIn(200);
             that.$loading.fadeOut(200);
+            $('.imgbox').removeAttr('style');
+            $('.canvas').removeAttr('style');
         } else if(res.code == 80003) {
             // 课件图片
             clearInterval(that.audioCurrenttimeTimeout);
@@ -553,7 +558,7 @@ var INDEX = {
                 that.$audioBox.find('.progress-bar').css('width', audio.currentTime / audio.duration * 100 + '%');
             }, 1000);
 
-            that.sendAudioMsg(6);
+            that.sendAudioMsg(2);
 
             that.$audioBox.show();
             that.afterShowImage();
