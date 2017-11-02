@@ -7,23 +7,11 @@ var INDEX = {
             localStorage.setItem('sid', '');
             localStorage.setItem('token', '');
 
-            localStorage.removeItem('sessionType');
-            localStorage.removeItem('picUrl');
-            localStorage.removeItem('answerType');
-            localStorage.removeItem('isAnswer');
-            localStorage.removeItem('timeClock');
-            localStorage.removeItem('answerNum');
-            localStorage.removeItem('answerCharts');
-            localStorage.removeItem('answerStudent');
+            this.clearLocalStorage();
+
             localStorage.removeItem('bindcardData');
             localStorage.removeItem('bindStudentData');
-            localStorage.removeItem('canvasData');
-            localStorage.removeItem('audioTime');
             localStorage.removeItem('zoom');
-            localStorage.removeItem('scale');
-            localStorage.removeItem('audioStatus');
-            $('.imgbox').removeAttr('style');
-            $('.canvas').removeAttr('style');
         }
 
         that = this;
@@ -144,6 +132,26 @@ var INDEX = {
         }
     },
 
+    // 清除缓存
+    clearLocalStorage: function() {
+        localStorage.removeItem('sessionType');
+        localStorage.removeItem('picUrl');
+        localStorage.removeItem('answerType');
+        localStorage.removeItem('isAnswer');
+        localStorage.removeItem('timeClock');
+        localStorage.removeItem('answerNum');
+        localStorage.removeItem('answerCharts');
+        localStorage.removeItem('answerStudent');
+        // localStorage.removeItem('bindcardData');
+        // localStorage.removeItem('bindStudentData');
+        localStorage.removeItem('canvasData');
+        localStorage.removeItem('audioTime');
+        localStorage.removeItem('scale');
+        localStorage.removeItem('audioStatus');
+        $('.imgbox').removeAttr('style');
+        $('.canvas').removeAttr('style');
+    },
+
     // 向服务端发送心跳包
     sendHeartMsg: function() {
         var XF = setInterval(function() {
@@ -242,20 +250,7 @@ var INDEX = {
             }
         } else if(res.code == 80002) {
             // 结束录制
-            localStorage.removeItem('sessionType');
-            localStorage.removeItem('picUrl');
-            localStorage.removeItem('answerType');
-            localStorage.removeItem('isAnswer');
-            localStorage.removeItem('timeClock');
-            localStorage.removeItem('answerNum');
-            localStorage.removeItem('answerCharts');
-            localStorage.removeItem('answerStudent');
-            // localStorage.removeItem('bindcardData');
-            // localStorage.removeItem('bindStudentData');
-            localStorage.removeItem('canvasData');
-            localStorage.removeItem('audioTime');
-            localStorage.removeItem('scale');
-            localStorage.removeItem('audioStatus');
+            this.clearLocalStorage();
 
             that.$connection.fadeIn(200);
             that.$screen.find('#canvas').remove();
@@ -269,8 +264,6 @@ var INDEX = {
             that.$audioBox.find('audio').remove();
             that.$screen.fadeIn(200);
             that.$loading.fadeOut(200);
-            $('.imgbox').removeAttr('style');
-            $('.canvas').removeAttr('style');
         } else if(res.code == 80003) {
             // 课件图片
             clearInterval(that.audioCurrenttimeTimeout);
@@ -279,6 +272,7 @@ var INDEX = {
             
             localStorage.setItem('sessionType', '0');
             if(res.data.picList) {
+                // 初次上课清除缓存
                 that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer, res.data.picList);
             } else {
                 that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer);
