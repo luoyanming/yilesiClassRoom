@@ -21,6 +21,7 @@ var INDEX = {
             localStorage.removeItem('audioTime');
             localStorage.removeItem('zoom');
             localStorage.removeItem('scale');
+            localStorage.removeItem('audioStatus');
             $('.imgbox').removeAttr('style');
             $('.canvas').removeAttr('style');
         }
@@ -199,15 +200,18 @@ var INDEX = {
             switch (res.data.opType) {
                 case 1: // 开始
                     audio.play();
+                    localStorage.setItem('audioStatus', '1');
                     break;
                 case 2: // 暂停
                     audio.pause();
+                    localStorage.setItem('audioStatus', '2');
                     break;
                 case 3: // 重新播放
                     audio.currentTime = 0;
                     that.setStorageAudioTime(0);
                     that.sendAudioMsg(1);
                     audio.play();
+                    localStorage.setItem('audioStatus', '1');
                     break;
                 case 4: // 前进
                     if(audio.currentTime > audio.duration - parseInt(res.data.seconds)) {
@@ -218,6 +222,8 @@ var INDEX = {
 
                     that.setStorageAudioTime(audio.currentTime);
                     that.sendAudioMsg(1);
+                    audio.play();
+                    localStorage.setItem('audioStatus', '1');
                     break;
                 case 5: // 后退
                     if(audio.currentTime < parseInt(res.data.seconds)) {
@@ -228,6 +234,8 @@ var INDEX = {
                     
                     that.setStorageAudioTime(audio.currentTime);
                     that.sendAudioMsg(1);
+                    audio.play();
+                    localStorage.setItem('audioStatus', '1');
                     break;
                 default:
                     return;
@@ -247,6 +255,7 @@ var INDEX = {
             localStorage.removeItem('canvasData');
             localStorage.removeItem('audioTime');
             localStorage.removeItem('scale');
+            localStorage.removeItem('audioStatus');
 
             that.$connection.fadeIn(200);
             that.$screen.find('#canvas').remove();
@@ -452,6 +461,11 @@ var INDEX = {
 
     // 显示课程图片
     showImage: function(picurl, answerType, isAnswer, piclist) {
+        if(picurl != localStorage.getItem('picUrl')) {
+            // 如果url和缓存的不一致，表示切换课件，将播放状态置位：2
+            // 1：正在播放； 2：暂停
+            localStorage.setItem('audioStatus', '2');
+        }
         localStorage.setItem('picUrl', picurl);
         localStorage.setItem('answerType', answerType);
         localStorage.setItem('isAnswer', isAnswer ? 'true' : '');
@@ -489,7 +503,8 @@ var INDEX = {
             var img = new Image(),
                 pageWidth = window.innerWidth,
                 pageHeight = window.innerHeight - 42,
-                pageBL;
+                pageBL,
+                orientation;
 
             if(typeof pageWidth != 'number') {
                 if(document.compatMode == 'CSS1Compat') {
@@ -502,28 +517,134 @@ var INDEX = {
             }
 
             pageBL = pageWidth/pageHeight;
-            img.src = picurl;
-            img.onload = function() {
-                var imgW = img.width,
-                    imgH = img.height,
-                    imgBL = imgW/imgH;
+            img.crossOrigin = 'anonymous';
+            img.src = picurl +'?t=' + (new Date()).getTime();
 
-                if(imgBL > pageBL) {
-                    that.$courseImg.css({ 'width': '100%', 'height': 'auto'});
-                } else {
-                    that.$courseImg.css({ 'height': '100%', 'width': 'auto'});
-                }
-                
-                that.$courseImg.attr('src', picurl).show();
+            img.onload = function(e) {
+                // 获取图片元信息
+                EXIF.getData(img, function() {
+                    orientation = EXIF.getTag(this, 'Orientation');
+                    console.log(orientation);
 
-                that.afterShowImage();
-            }
+                    var imgW = img.width,
+                        imgH = img.height;
+
+                    switch (orientation) {
+                        case undefined: // 原图
+                            var imgBL = imgW/imgH;
+                            if(imgBL > pageBL) {
+                                that.$courseImg.css({
+                                    'width': '100%',
+                                    'height': 'auto',
+                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                    'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
+                                });
+                            } else {
+                                that.$courseImg.css({ 
+                                    'width': 'auto',
+                                    'height': '100%',
+                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                    'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
+                                });
+                            }
+
+                            break;
+                        case 1: // 原图
+                            var imgBL = imgW/imgH;
+                            if(imgBL > pageBL) {
+                                that.$courseImg.css({
+                                    'width': '100%',
+                                    'height': 'auto',
+                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                    'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
+                                });
+                            } else {
+                                that.$courseImg.css({ 
+                                    'width': 'auto',
+                                    'height': '100%',
+                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                    'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
+                                });
+                            }
+
+                            break;
+                        case 3: // 逆时针 180
+                            var imgBL = imgW/imgH;
+                            if(imgBL > pageBL) {
+                                that.$courseImg.css({
+                                    'width': '100%',
+                                    'height': 'auto',
+                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
+                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)'
+                                });
+                            } else {
+                                that.$courseImg.css({ 
+                                    'width': 'auto',
+                                    'height': '100%',
+                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
+                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)'
+                                });
+                            }
+                            break;
+                        case 6: // 逆时针270
+                            var imgBL = imgH/imgW;
+                            if(imgBL > pageBL) {
+                                that.$courseImg.css({
+                                    'width': 'auto',
+                                    'height': pageWidth,
+                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
+                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)'
+                                });
+                            } else {
+                                that.$courseImg.css({ 
+                                    'width': pageHeight,
+                                    'height': 'auto',
+                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
+                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)'
+                                });
+                            }
+
+                            break;
+                        case 8: // 逆时针90
+                            var imgBL = imgH/imgW;
+                            if(imgBL > pageBL) {
+                                that.$courseImg.css({
+                                    'width': 'auto',
+                                    'height': pageWidth,
+                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
+                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)'
+                                });
+                            } else {
+                                that.$courseImg.css({ 
+                                    'width': pageHeight,
+                                    'height': 'auto',
+                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
+                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)'
+                                });
+                            }
+
+                            break;
+                        default:
+
+                    }
+                    
+                    that.$courseImg.attr('src', picurl).show();
+
+                    that.afterShowImage();
+                });
+            };
         }
 
         if(piclist) {
             that.preloadImages(piclist);
         }
     },
+
+    // 对图片排版进行修改, 垂直方向，可能经过旋转
+    picOrientationV: function(deg) {
+
+    },
+
 
     // 音频事件绑定
     handleAudioEvents: function() {
@@ -559,6 +680,10 @@ var INDEX = {
             }, 1000);
 
             that.sendAudioMsg(2);
+
+            if(localStorage.getItem('audioStatus') == '1') {
+                audio.play();
+            }
 
             that.$audioBox.show();
             that.afterShowImage();

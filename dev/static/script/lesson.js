@@ -414,7 +414,11 @@ $(function() {
 
                                 $('#form-' + id).parent().parent().append(that.progressUI(id));
                                 $('#form-' + id).parent().parent().prepend(str);
-                                $('#form-' + id).parent().parent().parent().find('.title').html(name);
+                                if(name.length > 8) {
+                                    $('#form-' + id).parent().parent().parent().find('.title').html(name.substring(0, 8) +'...');
+                                } else {
+                                    $('#form-' + id).parent().parent().parent().find('.title').html(name);
+                                }
 
                                 that.$list.find('ul').prepend(temp);
                                 that.inputFileBind();

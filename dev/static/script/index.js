@@ -21,6 +21,7 @@ var INDEX = {
         localStorage.removeItem('audioTime');
         localStorage.removeItem('zoom');
         localStorage.removeItem('scale');
+        localStorage.removeItem('audioStatus');
 
         that = this;
         // 心跳包计数
