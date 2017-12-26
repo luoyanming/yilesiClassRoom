@@ -9,12 +9,14 @@ var INDEX = {
 
         localStorage.removeItem('sessionType');
         localStorage.removeItem('picUrl');
+        localStorage.removeItem('htmlUrl');
         localStorage.removeItem('answerType');
         localStorage.removeItem('isAnswer');
         localStorage.removeItem('timeClock');
         localStorage.removeItem('answerNum');
         localStorage.removeItem('answerCharts');
         localStorage.removeItem('answerStudent');
+        localStorage.removeItem('unAnswerStudent');
         localStorage.removeItem('bindcardData');
         localStorage.removeItem('bindStudentData');
         localStorage.removeItem('canvasData');

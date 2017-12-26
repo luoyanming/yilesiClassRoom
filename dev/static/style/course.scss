@@ -162,6 +162,11 @@
 
                 &.text-number{
                     margin-top: 5px;
+
+                    .btn-unAnswer{
+                        float: right;
+                        color: #38A0FF;
+                    }
                 }
             }
 
@@ -256,7 +261,8 @@
             }
         }
 
-        .student{
+        .student,
+        .unAnswer-student{
             @include position(absolute, 31, 0, 0, 0, 0);
             background: rgba(0, 0, 0, .7);
 
@@ -285,6 +291,17 @@
                     background: #FFF;
                     border-radius: 10px;
                 }
+            }
+
+            .no-list{
+                @include position(absolute, 32, 50%, none, none, 50%);
+                width: 700px;
+                @include translate(-50%, -50%, 0);
+                color: #fff;
+                font-size: 18px;
+                text-align: center;
+                line-height: 1;
+                font-weight: 400;
             }
         }
     }

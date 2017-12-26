@@ -12,6 +12,7 @@ var INDEX = {
             localStorage.removeItem('bindcardData');
             localStorage.removeItem('bindStudentData');
             localStorage.removeItem('zoom');
+            localStorage.removeItem('PresentationStep');
         }
 
         that = this;
@@ -37,7 +38,7 @@ var INDEX = {
             // 登陆成功之后的操作
             if(localStorage.getItem('picUrl')) {
                 // 如果有缓存（表示上课过程中刷新页面）
-                that.showImage(localStorage.getItem('picUrl'), localStorage.getItem('answerType'), localStorage.getItem('isAnswer'));
+                that.showImage(localStorage.getItem('picUrl'), localStorage.getItem('answerType'), localStorage.getItem('isAnswer'), '', localStorage.getItem('htmlUrl'), '');
             } else {
                 that.$connection.fadeIn(200);
                 that.$screen.fadeIn(200);
@@ -56,6 +57,7 @@ var INDEX = {
         that.$loading = $('#loading');
         that.$screen = $('#screen');
         that.$courseImg = $('#courseImg');
+        that.$courseIframe = $('#courseIframe');
         that.$audioBox = $('#audioBox');
         that.$toolbar = $('#toolbar');
         that.$buttonRefresh = $('#button-refresh');
@@ -136,12 +138,14 @@ var INDEX = {
     clearLocalStorage: function() {
         localStorage.removeItem('sessionType');
         localStorage.removeItem('picUrl');
+        localStorage.removeItem('htmlUrl');
         localStorage.removeItem('answerType');
         localStorage.removeItem('isAnswer');
         localStorage.removeItem('timeClock');
         localStorage.removeItem('answerNum');
         localStorage.removeItem('answerCharts');
         localStorage.removeItem('answerStudent');
+        localStorage.removeItem('unAnswerStudent');
         // localStorage.removeItem('bindcardData');
         // localStorage.removeItem('bindStudentData');
         localStorage.removeItem('canvasData');
@@ -170,7 +174,7 @@ var INDEX = {
     // 处理接收到的消息
     doReceiveMsg: function(res) {
         res = JSON.parse(res);  
-        console.log(res)
+        // console.log(res)
 
         if(res.code == -1) {
 
@@ -184,7 +188,7 @@ var INDEX = {
             // 登陆成功
             if(localStorage.getItem('picUrl')) {
                 // 如果有缓存（表示上课过程中刷新页面）
-                that.showImage(localStorage.getItem('picUrl'), localStorage.getItem('answerType'), localStorage.getItem('isAnswer'));
+                that.showImage(localStorage.getItem('picUrl'), localStorage.getItem('answerType'), localStorage.getItem('isAnswer'), '', localStorage.getItem('htmlUrl'), '');
             } else {
                 that.$connection.fadeIn(200);
                 that.$screen.fadeIn(200);
@@ -248,6 +252,45 @@ var INDEX = {
                 default:
                     return;
             }
+        } else if(res.code == 10015) {
+            console.log(10015)
+            // PPT动画操作
+            if(res.data.pptOpType == 1) {
+                // 上一步
+                courseIframe.window.Presentation.Prev();
+                // 缓存当前第几步动画
+                setTimeout(function() {
+                    localStorage.setItem('PresentationStep', courseIframe.window.Presentation.CurrentStatus().step);
+                }, 200);
+                
+                // 发送回执
+                that.sendMsg({
+                    "bizType": 10015,
+                    "sid": that.sid,
+                    "token": that.token,
+                    "data": {
+                        "sourceType": "web",
+                        "pptOpType": 1
+                    }
+                });
+            } else if(res.data.pptOpType == 2) {
+                // 下一步
+                courseIframe.window.Presentation.Next();
+                // 缓存当前第几步动画
+                setTimeout(function() {
+                    localStorage.setItem('PresentationStep', courseIframe.window.Presentation.CurrentStatus().step);
+                }, 200);
+                // 发送回执
+                that.sendMsg({
+                    "bizType": 10015,
+                    "sid": that.sid,
+                    "token": that.token,
+                    "data": {
+                        "sourceType": "web",
+                        "pptOpType": 2
+                    }
+                });
+            }
         } else if(res.code == 80002) {
             // 结束录制
             this.clearLocalStorage();
@@ -259,23 +302,33 @@ var INDEX = {
             that.$screen.find('.state-after').remove();
             that.$screen.find('.chart').remove();
             that.$screen.find('.student').remove();
+            that.$screen.find('.unAnswer-student').remove();
             that.$courseImg.hide();
+            $('#courseIframe').remove();
             that.$audioBox.hide();
             that.$audioBox.find('audio').remove();
             that.$screen.fadeIn(200);
             that.$loading.fadeOut(200);
         } else if(res.code == 80003) {
+            // console.log(res)
             // 课件图片
             clearInterval(that.audioCurrenttimeTimeout);
 
             localStorage.removeItem('zoom');
+            localStorage.removeItem('PresentationStep');
             
             localStorage.setItem('sessionType', '0');
             if(res.data.picList) {
                 // 初次上课清除缓存
-                that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer, res.data.picList);
+                this.clearLocalStorage();
+                
+                if(res.data.htmlList) {
+                    that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer, res.data.picList, res.data.htmlUrl, res.data.htmlList);
+                } else {
+                    that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer, res.data.picList, res.data.htmlUrl, '');
+                }
             } else {
-                that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer);
+                that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer, '', res.data.htmlUrl, '');
             }
         } else if(res.code == 80004) {
             // 开始答题
@@ -301,7 +354,7 @@ var INDEX = {
         } else if(res.code == 80008) {
             // 收到服务端的答题学生人数
             localStorage.setItem('answerNum', res.data.answerNum);
-            that.$screen.find('.state-doing .text-number').html('答题人数：' + res.data.answerNum + '人');
+            that.$screen.find('.state-doing .text-number .number').html('答题人数：' + res.data.answerNum + '人');
         } else if(res.code == 80009) {
             // 关闭答题结果
             localStorage.setItem('sessionType', '3');
@@ -445,6 +498,22 @@ var INDEX = {
                     context.clearRect(0, 0, $('#canvas').width(), $('#canvas').height());
                 }
             }
+        } else if(res.code == 80021) {
+            // 显示 尚未答题学生
+            localStorage.setItem('sessionType', '6');
+            localStorage.setItem('unAnswerStudent', JSON.stringify(res.data));
+            that.$screen.find('.state-doing').hide();
+            that.showUnAnswerStudent();
+        } else if(res.code == 80022) {
+            // 关闭 尚未答题学生
+            // localStorage.setItem('sessionType', '3');
+            that.$screen.find('.unAnswer-student').remove();
+            that.$screen.find('.state-doing').show();
+            localStorage.setItem('sessionType', '2');
+            that.$screen.find('.state-before').remove();
+            that.$screen.find('.state-after').remove();
+            that.$screen.find('.chart').remove();
+            that.startAnswer();
         }
     },
 
@@ -454,191 +523,233 @@ var INDEX = {
     },
 
     // 显示课程图片
-    showImage: function(picurl, answerType, isAnswer, piclist) {
+    showImage: function(picurl, answerType, isAnswer, piclist, htmlUrl, htmlList) {
         if(picurl != localStorage.getItem('picUrl')) {
             // 如果url和缓存的不一致，表示切换课件，将播放状态置位：2
             // 1：正在播放； 2：暂停
             localStorage.setItem('audioStatus', '2');
         }
         localStorage.setItem('picUrl', picurl);
+        localStorage.setItem('htmlUrl', htmlUrl);
         localStorage.setItem('answerType', answerType);
         localStorage.setItem('isAnswer', isAnswer ? 'true' : '');
 
         that.$connection.hide();
         that.$screen.hide();
         that.$courseImg.hide();
-        that.showLoading('正在同步显示手机屏幕，请稍候');
-
+        $('#courseIframe').remove();
         that.$screen.find('#canvas').remove();
         that.$screen.find('.state-before').remove();
         that.$screen.find('.state-doing').remove();
         that.$screen.find('.state-after').remove();
         that.$screen.find('.chart').remove();
         that.$screen.find('.student').remove();
-        that.$courseImg.hide();
+        that.$screen.find('.unAnswer-student').remove();
         that.$audioBox.find('audio').remove();
         that.$audioBox.hide();
+        that.showLoading('正在同步显示手机屏幕，请稍候');
 
         if(localStorage.getItem('zoom')) {
             that.zoomAndMove();
         }
 
-        // 判断课件类型是图片还是MP3
-        var picArr = picurl.split('.'),
-            picType = picArr[picArr.length - 1];
+        // console.log(htmlUrl)
+        if(htmlUrl) {
+            // 加载html页面
 
-        if(picType == 'mp3') {
-            // 音频
-            that.$audioBox.append('<audio src="'+ picurl +'" preload="metadata" id="audio"></audio>');
+            var iframe = document.createElement("iframe");
+            iframe.id = 'iframe';
+            iframe.src = htmlUrl;
+            iframe.style.display = 'none';
 
-            that.handleAudioEvents();
-        } else {
-            // 图片
-            var img = new Image(),
-                pageWidth = window.innerWidth,
-                pageHeight = window.innerHeight - 42,
-                pageBL,
-                orientation;
+            if (iframe.attachEvent){ 
+                iframe.attachEvent("onload", function() {
+                    // that.$screen.find('.imgbox').append('<iframe width="100%" height="100%" src="'+ htmlUrl +'" name="courseIframe" id="courseIframe"></iframe>');
+                    that.afterShowImage();
+                    $('#iframe').remove();
+                    $('#courseIframe').show();
 
-            if(typeof pageWidth != 'number') {
-                if(document.compatMode == 'CSS1Compat') {
-                    pageWidth = document.documentElement.clientWidth;
-                    pageHeight = document.documentElement.clientHeight - 42;
-                } else {
-                    pageWidth = document.body.clientWidth;
-                    pageHeight = document.body.clientHeight - 42;
-                }
+                    that.showPresentation();
+                }); 
+            } else { 
+                iframe.onload = function() {
+                    // that.$screen.find('.imgbox').append('<iframe width="100%" height="100%" src="'+ htmlUrl +'" name="courseIframe" id="courseIframe"></iframe>');
+                    that.afterShowImage();
+                    $('#iframe').remove();
+                    $('#courseIframe').show();
+
+                    that.showPresentation();
+                }; 
             }
 
-            pageBL = pageWidth/pageHeight;
-            img.crossOrigin = 'anonymous';
-            img.src = picurl +'?t=' + (new Date()).getTime();
+            that.$screen.find('.imgbox').append('<iframe width="100%" height="100%" src="'+ htmlUrl +'" name="courseIframe" id="courseIframe" style="display: none;"></iframe>');
+            document.body.appendChild(iframe);
+        } else {
+            // 判断课件类型是图片还是MP3
 
-            img.onload = function(e) {
-                // 获取图片元信息
-                EXIF.getData(img, function() {
-                    orientation = EXIF.getTag(this, 'Orientation');
-                    console.log(orientation);
+            var picArr = picurl.split('.'),
+                picType = picArr[picArr.length - 1];
 
-                    var imgW = img.width,
-                        imgH = img.height;
+            if(picType == 'mp3') {
+                // 音频
+                that.$audioBox.append('<audio src="'+ picurl +'" preload="metadata" id="audio"></audio>');
 
-                    switch (orientation) {
-                        case undefined: // 原图
-                            var imgBL = imgW/imgH;
-                            if(imgBL > pageBL) {
-                                that.$courseImg.css({
-                                    'width': '100%',
-                                    'height': 'auto',
-                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
-                                    'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
-                                });
-                            } else {
-                                that.$courseImg.css({ 
-                                    'width': 'auto',
-                                    'height': '100%',
-                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
-                                    'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
-                                });
-                            }
+                that.handleAudioEvents();
+            } else {
+                // 图片
+                var img = new Image(),
+                    pageWidth = window.innerWidth,
+                    pageHeight = window.innerHeight - 42,
+                    pageBL,
+                    orientation;
 
-                            break;
-                        case 1: // 原图
-                            var imgBL = imgW/imgH;
-                            if(imgBL > pageBL) {
-                                that.$courseImg.css({
-                                    'width': '100%',
-                                    'height': 'auto',
-                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
-                                    'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
-                                });
-                            } else {
-                                that.$courseImg.css({ 
-                                    'width': 'auto',
-                                    'height': '100%',
-                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
-                                    'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
-                                });
-                            }
-
-                            break;
-                        case 3: // 逆时针 180
-                            var imgBL = imgW/imgH;
-                            if(imgBL > pageBL) {
-                                that.$courseImg.css({
-                                    'width': '100%',
-                                    'height': 'auto',
-                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
-                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)'
-                                });
-                            } else {
-                                that.$courseImg.css({ 
-                                    'width': 'auto',
-                                    'height': '100%',
-                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
-                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)'
-                                });
-                            }
-                            break;
-                        case 6: // 逆时针270
-                            var imgBL = imgH/imgW;
-                            if(imgBL > pageBL) {
-                                that.$courseImg.css({
-                                    'width': 'auto',
-                                    'height': pageWidth,
-                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
-                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)'
-                                });
-                            } else {
-                                that.$courseImg.css({ 
-                                    'width': pageHeight,
-                                    'height': 'auto',
-                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
-                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)'
-                                });
-                            }
-
-                            break;
-                        case 8: // 逆时针90
-                            var imgBL = imgH/imgW;
-                            if(imgBL > pageBL) {
-                                that.$courseImg.css({
-                                    'width': 'auto',
-                                    'height': pageWidth,
-                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
-                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)'
-                                });
-                            } else {
-                                that.$courseImg.css({ 
-                                    'width': pageHeight,
-                                    'height': 'auto',
-                                    '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
-                                    'transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)'
-                                });
-                            }
-
-                            break;
-                        default:
-
+                if(typeof pageWidth != 'number') {
+                    if(document.compatMode == 'CSS1Compat') {
+                        pageWidth = document.documentElement.clientWidth;
+                        pageHeight = document.documentElement.clientHeight - 42;
+                    } else {
+                        pageWidth = document.body.clientWidth;
+                        pageHeight = document.body.clientHeight - 42;
                     }
-                    
-                    that.$courseImg.attr('src', picurl).show();
+                }
 
-                    that.afterShowImage();
-                });
-            };
-        }
+                pageBL = pageWidth/pageHeight;
+                img.crossOrigin = 'anonymous';
 
-        if(piclist) {
-            that.preloadImages(piclist);
+                img.onload = function(e) {
+                    // 获取图片元信息
+                    EXIF.getData(img, function() {
+                        orientation = EXIF.getTag(this, 'Orientation');
+
+                        var imgW = img.width,
+                            imgH = img.height;
+
+                        switch (orientation) {
+                            case undefined: // 原图
+                                var imgBL = imgW/imgH;
+                                if(imgBL > pageBL) {
+                                    that.$courseImg.css({
+                                        'width': '100%',
+                                        'height': 'auto',
+                                        '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
+                                    });
+                                } else {
+                                    that.$courseImg.css({ 
+                                        'width': 'auto',
+                                        'height': '100%',
+                                        '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
+                                    });
+                                }
+
+                                break;
+                            case 1: // 原图
+                                var imgBL = imgW/imgH;
+                                if(imgBL > pageBL) {
+                                    that.$courseImg.css({
+                                        'width': '100%',
+                                        'height': 'auto',
+                                        '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
+                                    });
+                                } else {
+                                    that.$courseImg.css({ 
+                                        'width': 'auto',
+                                        'height': '100%',
+                                        '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
+                                    });
+                                }
+
+                                break;
+                            case 3: // 逆时针 180
+                                var imgBL = imgW/imgH;
+                                if(imgBL > pageBL) {
+                                    that.$courseImg.css({
+                                        'width': '100%',
+                                        'height': 'auto',
+                                        '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
+                                        'transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)'
+                                    });
+                                } else {
+                                    that.$courseImg.css({ 
+                                        'width': 'auto',
+                                        'height': '100%',
+                                        '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
+                                        'transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)'
+                                    });
+                                }
+                                break;
+                            case 6: // 逆时针270
+                                var imgBL = imgH/imgW;
+                                if(imgBL > pageBL) {
+                                    that.$courseImg.css({
+                                        'width': 'auto',
+                                        'height': pageWidth,
+                                        '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
+                                        'transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)'
+                                    });
+                                } else {
+                                    that.$courseImg.css({ 
+                                        'width': pageHeight,
+                                        'height': 'auto',
+                                        '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
+                                        'transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)'
+                                    });
+                                }
+
+                                break;
+                            case 8: // 逆时针90
+                                var imgBL = imgH/imgW;
+                                if(imgBL > pageBL) {
+                                    that.$courseImg.css({
+                                        'width': 'auto',
+                                        'height': pageWidth,
+                                        '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
+                                        'transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)'
+                                    });
+                                } else {
+                                    that.$courseImg.css({ 
+                                        'width': pageHeight,
+                                        'height': 'auto',
+                                        '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
+                                        'transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)'
+                                    });
+                                }
+
+                                break;
+                            default:
+
+                        }
+                        
+                        that.$courseImg.attr('src', picurl).show();
+
+                        that.afterShowImage();
+                    });
+                };
+
+                // img.src = picurl +'?t=' + (new Date()).getTime();
+                img.src = picurl;
+            }
+
+            if(!htmlList && piclist) {
+                that.preloadImages(piclist);
+            }
         }
     },
 
-    // 对图片排版进行修改, 垂直方向，可能经过旋转
-    picOrientationV: function(deg) {
-
+    // ppt动画缓存步骤播放
+    showPresentation: function() {
+        if(localStorage.getItem('PresentationStep')) {
+            setTimeout(function() {
+                var step = parseInt(localStorage.getItem('PresentationStep')) + 1,
+                    slide = parseInt(courseIframe.window.Presentation.CurrentStatus().slide);
+                console.log(step, slide)
+                courseIframe.window.Presentation.JumpToAnim(step, slide);
+            }, 500);
+        }
     },
-
 
     // 音频事件绑定
     handleAudioEvents: function() {
@@ -820,6 +931,9 @@ var INDEX = {
             case 5: //答题学生列表
                 that.showStudent();
                 break;
+            case 6: //尚未答题学生列表
+                that.showUnAnswerStudent();
+                break;
             case 80: //显示绑卡界面
                 that.showBindCard();
                 break;
@@ -879,7 +993,7 @@ var INDEX = {
         }
         str += '<div class="state-doing">';
         str += '<p class="text text-time">答题时间：00:'+ time.minutes +':'+ time.seconds + '</p>';
-        str += '<p class="text text-number">答题人数：'+ localStorage.getItem('answerNum') +'人</p>';
+        str += '<p class="text text-number clearfix"><span class="number">答题人数：'+ localStorage.getItem('answerNum') +'人</span><span class="btn-unAnswer">未答</span></p>';
         str += '<div class="button-stop">结束答题</div>';
         str += '</div>';
 
@@ -913,7 +1027,7 @@ var INDEX = {
 
         if(info.answerType == 3) {
             // 判断题
-            titlesArr = ["✓", "✕", '错答', '未答题'];
+            titlesArr = ["✓", "✕", '误按', '未答题'];
             optionsArr = [
                 { 'value': info.numTrue, 'width': '', bgcolor: '#38A0FF' },
                 { 'value': info.numFalse, 'width': '', bgcolor: '#FFFD38' },
@@ -928,7 +1042,7 @@ var INDEX = {
             }
         } else if(info.answerType == 1) {
             // 单选
-            titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '错答', '未答题'];
+            titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '误按', '未答题'];
             optionsArr = [
                 { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
                 { 'value': info.numB, 'width': '', bgcolor: '#FFFD38' },
@@ -944,7 +1058,7 @@ var INDEX = {
             optionsArr[index].bgcolor = "#1EC51D";
         } else if(info.answerType == 2) {
             // 多选
-            titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '答对', '错答', '未答题'];
+            titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '答对', '误按', '未答题'];
             optionsArr = [
                 { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
                 { 'value': info.numB, 'width': '', bgcolor: '#FFFD38' },
@@ -1011,7 +1125,7 @@ var INDEX = {
                 text = "未答题的学生";
                 break;
             case 7:
-                text = "错答的学生";
+                text = "误按的学生";
                 break;
             default:
                 text = "选择" + data.answerType + "的学生"
@@ -1029,6 +1143,32 @@ var INDEX = {
 
         that.$screen.find('.chart').remove();
         that.$screen.append(str);
+    },
+
+    // 显示尚未答题学生列表
+    showUnAnswerStudent: function() {
+        var data = JSON.parse(localStorage.getItem('unAnswerStudent')),
+            str = '';
+
+        if(data.studentList.length == 0) {
+            str += '<div class="unAnswer-student">';
+            str += '<div class="no-list">全部回答完毕</div>';
+            str += '</div>';
+        } else {
+            str += '<div class="unAnswer-student">';
+            str += '<div class="student-box">';
+            str += "<h2>尚未答题学生</h2>";
+            for(var i = 0; i < data.studentList.length; i++) {
+                str += '<p>'+ data.studentList[i].name +'</p>';
+            }
+            str += '</div>';
+            str += '</div>';
+        }
+
+        that.$screen.find('.state-after').remove();
+        that.$screen.append(str);
+
+        that.timeClock();
     },
 
     // 显示班级绑卡界面

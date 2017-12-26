@@ -319,8 +319,8 @@ $(function() {
                 var fileName = $(this)[0].files[0].name,
                     fileTypeArr = fileName.split('.'),
                     fileType = fileTypeArr[fileTypeArr.length - 1];
-                if(fileType !== 'ppt' && fileType !== 'pptx' && fileType !== 'mp3' && fileType !== 'jpg' && fileType !== 'jpeg' && fileType !== 'png') {
-                    that.showMsg('请上传 .ppt、.pptx、.mp3、jpg、jpeg、png 格式的文件！', 'error');
+                if(fileType !== 'ppt' && fileType !== 'pptx' && fileType !== 'mp3') {
+                    that.showMsg('请上传 .ppt 或 .pptx 或 .mp3 格式的文件！', 'error');
                     return false;
                 }
 
@@ -440,8 +440,6 @@ $(function() {
                     that.inputFileBind();
 
                     if(res.code == 0) {
-                        that.courseIdArr.push(id);
-
                         $('#form-' + id).parent().parent().append(that.loadUI(id));
 
                         $('#progress-' + id).hide();
