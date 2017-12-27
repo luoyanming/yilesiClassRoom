@@ -25,6 +25,7 @@ $(function() {
             that.$onlyone = $('.onlyone');
             that.$list = $('.list');
             that.$update = $('.update');
+            that.$failure = $('.failure');
             that.courseIdArr = [];
 
             that.$buttonLogout.on("click", function() {
@@ -145,6 +146,22 @@ $(function() {
                 }
 
                 var uploadWrap = $('#form-' + res.data.courseId).parent().parent();
+
+                if(res.data.errorInfo) {
+                    // ppt转换失败
+                    console.log('fail');
+
+                    if(res.data.addType == 2) {
+                        // web add
+                        uploadWrap.parent().remove();
+                    }
+
+                    that.$failure.find('.text').html(res.data.errorInfo);
+                    that.$failure.fadeIn(300);
+                    that.failureBtnSureBind();
+
+                    return false;
+                }
 
                 if(res.data.addType == 0) {
                     // edit or web add
@@ -546,6 +563,13 @@ $(function() {
             that.$update.find('.btn-sure').unbind('click');
             that.$update.find('.btn-sure').on('click', function() {
                 that.$update.fadeOut('300');
+            });
+        },
+
+        failureBtnSureBind: function() {
+            that.$failure.find('.btn-sure').unbind('click');
+            that.$failure.find('.btn-sure').on('click', function() {
+                that.$failure.fadeOut('300');
             });
         }
     };

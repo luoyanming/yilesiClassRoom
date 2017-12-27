@@ -253,7 +253,6 @@ var INDEX = {
                     return;
             }
         } else if(res.code == 10015) {
-            console.log(10015)
             // PPT动画操作
             if(res.data.pptOpType == 1) {
                 // 上一步
@@ -745,7 +744,7 @@ var INDEX = {
             setTimeout(function() {
                 var step = parseInt(localStorage.getItem('PresentationStep')) + 1,
                     slide = parseInt(courseIframe.window.Presentation.CurrentStatus().slide);
-                console.log(step, slide)
+
                 courseIframe.window.Presentation.JumpToAnim(step, slide);
             }, 500);
         }
@@ -1136,7 +1135,19 @@ var INDEX = {
         str += '<div class="student-box">';
         str += "<h2>" + text + "</h2>";
         for(var i = 0; i < data.studentList.length; i++) {
-            str += '<p>'+ data.studentList[i].name +'</p>';
+            if(data.studentList[i].name) {
+                if(data.studentList[i].status == 0) {
+                    str += '<p>'+ data.studentList[i].name +'</p>';
+                } else {
+                    str += '<p class="grey">'+ data.studentList[i].name +'</p>';
+                }
+            } else {
+                if(data.studentList[i].status == 0) {
+                    str += '<p>&nbsp;</p>';
+                } else {
+                    str += '<p class="grey">&nbsp;</p>';
+                }
+            }
         }
         str += '</div>';
         str += '</div>';
@@ -1158,8 +1169,21 @@ var INDEX = {
             str += '<div class="unAnswer-student">';
             str += '<div class="student-box">';
             str += "<h2>尚未答题学生</h2>";
+
             for(var i = 0; i < data.studentList.length; i++) {
-                str += '<p>'+ data.studentList[i].name +'</p>';
+                if(data.studentList[i].name) {
+                    if(data.studentList[i].status == 0) {
+                        str += '<p>'+ data.studentList[i].name +'</p>';
+                    } else {
+                        str += '<p class="grey">'+ data.studentList[i].name +'</p>';
+                    }
+                } else {
+                    if(data.studentList[i].status == 0) {
+                        str += '<p>&nbsp;</p>';
+                    } else {
+                        str += '<p class="grey">&nbsp;</p>';
+                    }
+                }
             }
             str += '</div>';
             str += '</div>';
@@ -1217,8 +1241,22 @@ var INDEX = {
 
         if(data.studentList && data.studentList.length > 0) {
             var temp = '';
+
             for(var i = 0; i < data.studentList.length; i++) {
-                temp += '<li class="list-item">'+ data.studentList[i] +'</li>';
+                if(data.studentList[i].name) {
+                    if(data.studentList[i].status == 0) {
+                        temp += '<li class="list-item">'+ data.studentList[i].name +'</li>';
+                    } else {
+                        temp += '<li class="list-item grey">'+ data.studentList[i].name +'</li>';
+                    }
+                } else {
+                    if(data.studentList[i].status == 0) {
+                        temp += '<li class="list-item">&nbsp;</li>';
+                    } else {
+                        temp += '<li class="list-item grey">&nbsp;</li>';
+                    }
+                }
+                
             }
 
             that.$bindlist.find('ul').html(temp);

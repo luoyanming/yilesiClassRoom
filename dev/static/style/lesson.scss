@@ -394,7 +394,8 @@
             }
         }
 
-        .update{
+        .update,
+        .failure{
             @include position(fixed, 120, 0, 0, 0, 0);
             background: rgba(0, 0, 0, .7);
 
