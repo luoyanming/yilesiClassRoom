@@ -345,13 +345,15 @@ $(function() {
                     fileType = fileTypeArr[fileTypeArr.length - 1];
                 if(fileType !== 'ppt' && fileType !== 'pptx' && fileType !== 'mp3' && fileType !== 'jpg' && fileType !== 'jpeg' && fileType !== 'png') {
                     that.showMsg('请上传 .ppt、.pptx、.mp3、jpg、jpeg、png 格式的文件！', 'error');
+                    that.reBindUpload(courseID);
                     return false;
                 }
 
-                if(fileSize > 100*1024*1024) {
+                if(fileSize > 1*1024*1024) {
                     that.$failure.find('.text').html('您上传的PPT《'+ fileName +'》大小超过限制，请上传小于100MB的PPT！');
                     that.$failure.fadeIn(300);
                     that.failureBtnSureBind();
+                    that.reBindUpload(courseID);
                     return false;
                 }
 
@@ -464,11 +466,7 @@ $(function() {
                     return xhr;
                 },  
                 success: function (res) {
-                    var formParent = $('#form-' + id).parent();
-                    $('#form-' + id).remove();
-                    formParent.html(that.formUI(id));
-                    formParent.parent().find('.text').show();
-                    that.inputFileBind();
+                    that.reBindUpload(id);
 
                     if(res.code == 0) {
                         that.courseIdArr.push(id);
@@ -484,14 +482,20 @@ $(function() {
                 error: function () {
                     that.showMsg('文件上传失败！请重试！', 'error');
 
-                    var formParent = $('#form-' + id).parent();
-                    $('#form-' + id).remove();
-                    formParent.html(that.formUI(id));
-                    formParent.parent().find('.text').show();
-
-                    that.inputFileBind();
+                    that.reBindUpload(id);
                 }
             });
+        },
+
+        // 重新绑定上传
+        reBindUpload: function(id) {
+            var formParent = $('#form-' + id).parent();
+
+            $('#form-' + id).remove();
+            formParent.html(that.formUI(id));
+            formParent.parent().find('.text').show();
+
+            that.inputFileBind();
         },
 
         // 创建课程上传进度条
