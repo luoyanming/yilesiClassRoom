@@ -349,7 +349,7 @@ $(function() {
                     return false;
                 }
 
-                if(fileSize > 1*1024*1024) {
+                if(fileSize > 100*1024*1024) {
                     that.$failure.find('.text').html('您上传的PPT《'+ fileName +'》大小超过限制，请上传小于100MB的PPT！');
                     that.$failure.fadeIn(300);
                     that.failureBtnSureBind();
