@@ -115,7 +115,7 @@ $(function() {
         // 处理接收到的消息
         doReceiveMsg: function(res) {
             res = JSON.parse(res);  
-            console.log(res)
+            // console.log(res)
 
             if(res.code == 10001) {
                 // 心跳包

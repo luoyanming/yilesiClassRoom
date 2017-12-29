@@ -631,6 +631,9 @@ var INDEX = {
                                         'width': '100%',
                                         'height': 'auto',
                                         '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-moz-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-ms-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-o-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
                                         'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
                                     });
                                 } else {
@@ -638,6 +641,9 @@ var INDEX = {
                                         'width': 'auto',
                                         'height': '100%',
                                         '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-moz-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-ms-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-o-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
                                         'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
                                     });
                                 }
@@ -650,6 +656,9 @@ var INDEX = {
                                         'width': '100%',
                                         'height': 'auto',
                                         '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-moz-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-ms-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-o-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
                                         'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
                                     });
                                 } else {
@@ -657,6 +666,9 @@ var INDEX = {
                                         'width': 'auto',
                                         'height': '100%',
                                         '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-moz-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-ms-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
+                                        '-o-transform': 'translate3d(-50%, -50%, 0) rotate(0deg)',
                                         'transform': 'translate3d(-50%, -50%, 0) rotate(0deg)'
                                     });
                                 }
@@ -669,6 +681,9 @@ var INDEX = {
                                         'width': '100%',
                                         'height': 'auto',
                                         '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
+                                        '-moz-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
+                                        '-ms-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
+                                        '-o-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
                                         'transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)'
                                     });
                                 } else {
@@ -676,6 +691,9 @@ var INDEX = {
                                         'width': 'auto',
                                         'height': '100%',
                                         '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
+                                        '-moz-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
+                                        '-ms-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
+                                        '-o-transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)',
                                         'transform': 'translate3d(-50%, -50%, 0) rotate(-180deg)'
                                     });
                                 }
@@ -687,6 +705,9 @@ var INDEX = {
                                         'width': 'auto',
                                         'height': pageWidth,
                                         '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
+                                        '-moz-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
+                                        '-ms-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
+                                        '-o-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
                                         'transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)'
                                     });
                                 } else {
@@ -694,6 +715,9 @@ var INDEX = {
                                         'width': pageHeight,
                                         'height': 'auto',
                                         '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
+                                        '-moz-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
+                                        '-ms-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
+                                        '-o-transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)',
                                         'transform': 'translate3d(-50%, -50%, 0) rotate(-270deg)'
                                     });
                                 }
@@ -706,6 +730,9 @@ var INDEX = {
                                         'width': 'auto',
                                         'height': pageWidth,
                                         '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
+                                        '-moz-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
+                                        '-ms-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
+                                        '-o-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
                                         'transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)'
                                     });
                                 } else {
@@ -713,6 +740,9 @@ var INDEX = {
                                         'width': pageHeight,
                                         'height': 'auto',
                                         '-webkit-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
+                                        '-moz-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
+                                        '-ms-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
+                                        '-o-transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)',
                                         'transform': 'translate3d(-50%, -50%, 0) rotate(-90deg)'
                                     });
                                 }
@@ -1443,12 +1473,18 @@ var INDEX = {
 
         $('.imgbox').css({
             '-webkit-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)',
-            '-webkit-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)'
+            '-moz-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)',
+            '-ms-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)',
+            '-o-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)',
+            'transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)'
         });
 
         $('.canvas').css({
             '-webkit-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)',
-            '-webkit-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)'
+            '-moz-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)',
+            '-ms-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)',
+            '-o-transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)',
+            'transform': 'scale('+ zoom.zoom +') translate3d('+ x +'%, '+ y +'%, 0)'
         });
     },
 
