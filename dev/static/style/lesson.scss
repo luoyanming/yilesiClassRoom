@@ -84,9 +84,25 @@
         overflow: hidden;
 
         .onlyone,
-        .list{
+        .list,
+        .free-tips{
             @include position(absolute, 3, 46px, 0, 0, 0);
             overflow: hidden;
+        }
+
+        .free-tips{
+            bottom: inherit;
+            border-bottom: 1px solid #D6DDE1;
+            text-align: center;
+
+            span{
+                padding-left: 34px;
+                line-height: 46px;
+                font-size: 18px;
+                color: #888888;
+                letter-spacing: 0.22px;
+                @include backgroundImage('../images/icon_tips.png', no-repeat, left, center, 23px, 23px);
+            }
         }
 
         .onlyone{
@@ -204,11 +220,14 @@
                     letter-spacing: 0.22px;
                     line-height: 30px;
                     text-align: center;
+                    white-space: nowrap;
                 }
             }
         }
 
         .list{
+            top: 90px;
+            
             ul{
                 // max-width: 1400px;
                 margin: 0 auto;
