@@ -27,7 +27,7 @@ var INDEX = {
         if(that.sid && that.token) {
             that.webSocketInit();
         } else {
-            location.href = './index.html?from=class';
+            location.href = './index.html?from=class&v=' + CONFIG.version;
         }
 
         // 心跳包计数
@@ -204,7 +204,7 @@ var INDEX = {
             // 账号在其它地方登陆，当前页面被踢下线
             ws.close();
             alert('您的账号已在其它地点登录，将被强制下线！');
-            location.href = './index.html?from=class';
+            location.href = './index.html?from=class&v=' + CONFIG.version;
         } else if(res.code == 10014) {
             // 音频操作
             var audio = document.getElementById('audio');
@@ -367,7 +367,7 @@ var INDEX = {
         } else if(res.code == 80011) {
             // 关闭同屏
             ws.close();
-            location.href = './index.html?from=class';
+            location.href = './index.html?from=class&v=' + CONFIG.version;
         } else if(res.code == 80013) {
             // 显示建班页面
             localStorage.setItem('sessionType', '80');

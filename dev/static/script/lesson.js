@@ -14,7 +14,7 @@ $(function() {
             if(that.sid && that.token) {
                 that.webSocketInit();
             } else {
-                location.href = './index.html?from=lesson';
+                location.href = './index.html?from=lesson&v=' + CONFIG.version;
             }
         },
 
@@ -38,7 +38,7 @@ $(function() {
                     }
                 });
                 ws.close();
-                window.location.href = "./index.html?from=lesson"
+                location.href = './index.html?from=lesson&v=' + CONFIG.version;
             })
         },
 
@@ -136,7 +136,7 @@ $(function() {
                 // 账号在其它地方登陆，当前页面被踢下线
                 ws.close();
                 alert('您的账号已在其它地点登录，将被强制下线！');
-                location.href = './index.html'
+                location.href = './index.html?v=' + CONFIG.version;
             } else if(res.code == 10009) {
                 // 刷新list
                 if($('.onlyone').css('display') == 'block' ) {
@@ -149,6 +149,7 @@ $(function() {
 
                 if(res.data.errorInfo) {
                     // ppt转换失败
+                    
                     if(res.data.addType == 2) {
                         // web add
                         uploadWrap.parent().remove();
@@ -158,7 +159,7 @@ $(function() {
                     that.$failure.fadeIn(300);
                     that.failureBtnSureBind();
 
-                     var formParent = $('#form-' + res.data.courseId).parent();
+                    var formParent = $('#form-' + res.data.courseId).parent();
                     $('#form-' + res.data.courseId).remove();
                     // formParent.parent().find('.text').show();
                     $('#progress-' + res.data.courseId).remove();
@@ -167,61 +168,63 @@ $(function() {
                     that.inputFileBind();
 
                     return false;
-                }
+                } else {
+                    // PPT 转换成功
 
-                if(res.data.addType == 0) {
-                    // edit or web add
-                    if(res.data.picUrl == '') {
-                        uploadWrap.find('.thumb').attr('src', './static/images/course-default.png');
-                    } else {
-                        uploadWrap.find('.thumb').attr('src', res.data.picUrl);
-                    }
+                    if(res.data.addType == 0) {
+                        // edit or web add
+                        if(res.data.picUrl == '') {
+                            uploadWrap.find('.thumb').attr('src', './static/images/course-default.png');
+                        } else {
+                            uploadWrap.find('.thumb').attr('src', res.data.picUrl);
+                        }
 
-                    if(that.courseIdArr.indexOf(res.data.courseId) == -1) {
-                        // 如果课程不存在，app新增
+                        if(that.courseIdArr.indexOf(res.data.courseId) == -1) {
+                            // 如果课程不存在，app新增
+                            that.courseIdArr.push(res.data.courseId);
+                            that.courseAppAddUI(res.data.courseId, res.data.picUrl, res.data.courseName);
+                        }
+                    } else if(res.data.addType == 1) {
                         that.courseIdArr.push(res.data.courseId);
                         that.courseAppAddUI(res.data.courseId, res.data.picUrl, res.data.courseName);
-                    }
-                } else if(res.data.addType == 1) {
-                    that.courseIdArr.push(res.data.courseId);
-                    that.courseAppAddUI(res.data.courseId, res.data.picUrl, res.data.courseName);
-                } else if(res.data.addType == 2) {
-                    // web add
-                    that.courseIdArr.push(res.data.courseId);
-                    if(res.data.picUrl == '') {
-                        uploadWrap.find('.thumb').attr('src', './static/images/course-default.png');
-                    } else {
-                        uploadWrap.find('.thumb').attr('src', res.data.picUrl);
-                    }
-                } else if(res.data.addType == 4) {
-                    // app delete
-                    $('#form-' + res.data.courseId).parent().parent().parent().remove();
+                    } else if(res.data.addType == 2) {
+                        // web add
+                        that.courseIdArr.push(res.data.courseId);
+                        if(res.data.picUrl == '') {
+                            uploadWrap.find('.thumb').attr('src', './static/images/course-default.png');
+                        } else {
+                            uploadWrap.find('.thumb').attr('src', res.data.picUrl);
+                        }
+                    } else if(res.data.addType == 4) {
+                        // app delete
+                        $('#form-' + res.data.courseId).parent().parent().parent().remove();
 
-                    for(var i = 0; i < that.courseIdArr.length; i++) {
-                        if(res.data.courseId == that.courseIdArr[i]) {
-                            that.courseIdArr.splice(i, 1);
+                        for(var i = 0; i < that.courseIdArr.length; i++) {
+                            if(res.data.courseId == that.courseIdArr[i]) {
+                                that.courseIdArr.splice(i, 1);
+                            }
                         }
                     }
-                }
 
-                if(res.data.courseName.length > 8) {
-                    uploadWrap.parent().find('.title').html(res.data.courseName.substring(0, 8) +'...');
-                } else {
-                    uploadWrap.parent().find('.title').html(res.data.courseName);
-                }
+                    if(res.data.courseName.length > 8) {
+                        uploadWrap.parent().find('.title').html(res.data.courseName.substring(0, 8) +'...');
+                    } else {
+                        uploadWrap.parent().find('.title').html(res.data.courseName);
+                    }
 
-                $('#progress-' + res.data.courseId).remove();
-                $('#load-' + res.data.courseId).remove();
-                
+                    $('#progress-' + res.data.courseId).remove();
+                    $('#load-' + res.data.courseId).remove();
+                    
 
-                if(!res.data.refresh) {
-                    that.$update.fadeIn(300);
-                    that.updateBtnSureBind();
+                    if(!res.data.refresh) {
+                        that.$update.fadeIn(300);
+                        that.updateBtnSureBind();
+                    }
                 }
             } else if(res.code == 80011) {
                 // 关闭同屏
                 ws.close();
-                location.href = './index.html?from=lesson';
+                location.href = './index.html?from=lesson&v=' + CONFIG.version;
             }
         },
 

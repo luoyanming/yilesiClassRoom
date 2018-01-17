@@ -189,10 +189,10 @@ var INDEX = {
 
             if(that.flag == 'class') {
                 // 跳转到课程播放页面
-                location.href = './course.html';
+                location.href = './course.html?v=' + CONFIG.version;
             } else if(that.flag == 'lesson') {
                 // 跳转到备课页面
-                location.href = './lesson.html';
+                location.href = './lesson.html?v=' + CONFIG.version;
             }
         }
     },
