@@ -44,6 +44,7 @@ var INDEX = {
         that.$buttonLesson = $('#button-lesson');
         that.$textClass = $('#text-class');
         that.$textLesson = $('#text-lesson');
+        that.$screenCode = $('#screen-code');
         that.$buttonDownload = $('#button-download');
         that.$buttonDownloadClose = $('#button-download-close');
         that.$downloadModal = $('#modal-download');
@@ -171,6 +172,10 @@ var INDEX = {
                     that.$qrcodeLesson.attr('src', res.data.qrCodeUrl).fadeIn(200);
                     that.$qrcodeMaskLesson.fadeIn(200);
                 }
+
+                var screenCode = res.data.screenCode;
+                that.$screenCode.html('<span>'+ screenCode.substring(0, 1) +'</span><span>' + screenCode.substring(1, 2) + '</span><span>' + screenCode.substring(2, 3) + '</span><span>' + screenCode.substring(3, 4) + '</span>')
+
                 that.$loading.fadeOut(200);
             }
         } else if(res.code == 10001) {

@@ -173,6 +173,28 @@
                 }
             }
         }
+
+        .screen-code{
+            margin: 77px auto 0;
+            font-size: 0;
+            text-align: center;
+
+            span{
+                display: inline-block;
+                width: 42px;
+                height: 42px;
+                font-size: 30px;
+                color: #000;
+                line-height: 42px;
+                text-align: center;
+                border: 1px solid #CECED2;
+                border-left: none;
+
+                &:first-child{
+                    border-left: 1px solid #CECED2;
+                }
+            }
+        }
     }
 
     .download{
