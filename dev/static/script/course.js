@@ -18,6 +18,7 @@ var INDEX = {
         that = this;
         that.UIInit();
 
+
         that.$connection.hide();
         that.$screen.hide();
         that.showLoading('正在连接易乐思课堂...');
@@ -38,7 +39,7 @@ var INDEX = {
             // 登陆成功之后的操作
             if(localStorage.getItem('picUrl')) {
                 // 如果有缓存（表示上课过程中刷新页面）
-                that.showImage(localStorage.getItem('picUrl'), localStorage.getItem('answerType'), localStorage.getItem('isAnswer'), '', localStorage.getItem('htmlUrl'), '');
+                that.showImage(localStorage.getItem('answerType'), localStorage.getItem('isAnswer'), localStorage.getItem('picUrl'), localStorage.getItem('htmlUrl'), '');
             } else {
                 that.$connection.fadeIn(200);
                 that.$screen.fadeIn(200);
@@ -139,6 +140,7 @@ var INDEX = {
         localStorage.removeItem('sessionType');
         localStorage.removeItem('picUrl');
         localStorage.removeItem('htmlUrl');
+        localStorage.removeItem('htmlPicList');
         localStorage.removeItem('answerType');
         localStorage.removeItem('isAnswer');
         localStorage.removeItem('timeClock');
@@ -188,7 +190,7 @@ var INDEX = {
             // 登陆成功
             if(localStorage.getItem('picUrl')) {
                 // 如果有缓存（表示上课过程中刷新页面）
-                that.showImage(localStorage.getItem('picUrl'), localStorage.getItem('answerType'), localStorage.getItem('isAnswer'), '', localStorage.getItem('htmlUrl'), '');
+                that.showImage(localStorage.getItem('answerType'), localStorage.getItem('isAnswer'), localStorage.getItem('picUrl'), localStorage.getItem('htmlUrl'), '');
             } else {
                 that.$connection.fadeIn(200);
                 that.$screen.fadeIn(200);
@@ -317,17 +319,14 @@ var INDEX = {
             localStorage.removeItem('PresentationStep');
             
             localStorage.setItem('sessionType', '0');
-            if(res.data.picList) {
+            if(res.data.picHtmlArray) {
                 // 初次上课清除缓存
                 this.clearLocalStorage();
                 
-                if(res.data.htmlList) {
-                    that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer, res.data.picList, res.data.htmlUrl, res.data.htmlList);
-                } else {
-                    that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer, res.data.picList, res.data.htmlUrl, '');
-                }
+                that.showImage(res.data.answerType, res.data.isAnswer, res.data.picUrl, res.data.htmlUrl, res.data.picHtmlArray);
+                
             } else {
-                that.showImage(res.data.picUrl, res.data.answerType, res.data.isAnswer, '', res.data.htmlUrl, '');
+                that.showImage(res.data.answerType, res.data.isAnswer, res.data.picUrl, res.data.htmlUrl, '');
             }
         } else if(res.code == 80004) {
             // 开始答题
@@ -522,7 +521,7 @@ var INDEX = {
     },
 
     // 显示课程图片
-    showImage: function(picurl, answerType, isAnswer, piclist, htmlUrl, htmlList) {
+    showImage: function(answerType, isAnswer, picurl, htmlUrl, htmlPicList) {
         if(picurl != localStorage.getItem('picUrl')) {
             // 如果url和缓存的不一致，表示切换课件，将播放状态置位：2
             // 1：正在播放； 2：暂停
@@ -552,7 +551,7 @@ var INDEX = {
             that.zoomAndMove();
         }
 
-        // console.log(htmlUrl)
+        
         if(htmlUrl) {
             // 加载html页面
 
@@ -569,6 +568,8 @@ var INDEX = {
                     $('#courseIframe').show();
 
                     that.showPresentation();
+
+                    that.preloadImageHtml(picurl, htmlUrl, htmlPicList);
                 }); 
             } else { 
                 iframe.onload = function() {
@@ -578,6 +579,8 @@ var INDEX = {
                     $('#courseIframe').show();
 
                     that.showPresentation();
+
+                    that.preloadImageHtml(picurl, htmlUrl, htmlPicList);
                 }; 
             }
 
@@ -755,16 +758,118 @@ var INDEX = {
                         that.$courseImg.attr('src', picurl).show();
 
                         that.afterShowImage();
+                        that.preloadImageHtml(picurl, htmlUrl, htmlPicList);
                     });
                 };
 
-                // img.src = picurl +'?t=' + (new Date()).getTime();
                 img.src = picurl;
             }
+        }
+    },
 
-            if(!htmlList && piclist) {
-                that.preloadImages(piclist);
+    // 预加载
+    preloadImageHtml: function(picUrl, htmlUrl, htmlPicList) {
+        if(htmlPicList && htmlPicList.length > 0) {
+            localStorage.setItem('htmlPicList', htmlPicList);
+        }
+
+        var htmlPicListArray = localStorage.getItem('htmlPicList');
+        htmlPicListArray = htmlPicListArray.split(',');
+
+        // console.table(htmlPicListArray)
+        
+        var index = 0,
+            totalLength = htmlPicListArray.length,
+            preloadArray = [];
+        if(htmlUrl) {
+            // html
+            index = htmlPicListArray.indexOf(htmlUrl);
+        } else {
+            // 图片或MP3
+            index = htmlPicListArray.indexOf(picUrl);
+        }
+
+        if(totalLength < 7) {
+            preloadArray = htmlPicListArray;
+        } else {
+            if(index < 3) {
+                preloadArray.push(htmlPicListArray[0])
+                preloadArray.push(htmlPicListArray[1])
+                preloadArray.push(htmlPicListArray[2])
+                preloadArray.push(htmlPicListArray[3])
+                preloadArray.push(htmlPicListArray[4])
+            } else if(index > totalLength - 3) {
+                preloadArray.push(htmlPicListArray[totalLength - 1])
+                preloadArray.push(htmlPicListArray[totalLength - 2])
+                preloadArray.push(htmlPicListArray[totalLength - 3])
+                preloadArray.push(htmlPicListArray[totalLength - 4])
+                preloadArray.push(htmlPicListArray[totalLength - 5])
+            } else {
+                preloadArray.push(htmlPicListArray[index - 3])
+                preloadArray.push(htmlPicListArray[index - 2])
+                preloadArray.push(htmlPicListArray[index - 1])
+                preloadArray.push(htmlPicListArray[index])
+                preloadArray.push(htmlPicListArray[index + 1])
+                preloadArray.push(htmlPicListArray[index + 2])
+                preloadArray.push(htmlPicListArray[index + 3])
+            }            
+        }
+
+        
+        for(var i = 0; i < preloadArray.length; i++) {
+            var preloadItem = preloadArray[i],
+                preloadItemIndex = htmlPicListArray.indexOf(preloadItem),
+                preloadItemArr = preloadItem.split('.'),
+                preloadItemArrLength = preloadItemArr.length,
+                preloadItemType = preloadItemArr[preloadItemArrLength - 1];
+
+            if(preloadItemType == 'html') {
+                if($('#iframe-' + preloadItemIndex).length == 0) {
+                    var iframe = document.createElement("iframe");
+                        iframe.id = 'iframe-' + preloadItemIndex;
+                        iframe.src = preloadArray[i];
+                        iframe.style.display = 'none';
+
+                    document.body.appendChild(iframe);
+                }
+            } else if(preloadItemType == 'mp3') {
+
+            } else {
+                var img = new Image();
+                img.src = preloadItem;
             }
+        }       
+    },
+
+
+    // 预加载课件图片
+    preloadImages: function(list) {
+        var images = [];
+
+        for(var i = 0; i < list.length; i++) {
+            var picArr = list[i].split('.'),
+                picType = picArr[picArr.length - 1];
+
+            if(picType == 'mp3') {
+
+            } else {
+                images[i] = new Image();
+                images[i].src = list[i];
+            }
+        }
+    },
+
+    // 预加载html
+    preloadHtmls: function(list) {
+        for(var i = 0; i < list.length; i++) {
+            if(list[i]) {
+                var iframe = document.createElement("iframe");
+                    iframe.id = 'iframe-' + i;
+                    iframe.src = list[i];
+                    iframe.style.display = 'none';
+
+                document.body.appendChild(iframe);   
+            }              
         }
     },
 
@@ -1333,22 +1438,6 @@ var INDEX = {
         }, 1000);
     },
 
-    // 预加载课件图片
-    preloadImages: function(list) {
-        var images = [];
-
-        for(var i = 0; i < list.length; i++) {
-            var picArr = list[i].split('.'),
-                picType = picArr[picArr.length - 1];
-
-            if(picType == 'mp3') {
-
-            } else {
-                images[i] = new Image();
-                images[i].src = list[i];
-            }
-        }
-    },
 
     // 初始化画布
     canvasInit: function() {

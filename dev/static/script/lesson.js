@@ -221,6 +221,11 @@ $(function() {
                         that.updateBtnSureBind();
                     }
                 }
+            } else if(res.code == 1000901) {
+                // // 刷新整个页面
+                // alert(1)
+                // ws.close();
+                // location.href = './lesson.html?&v=' + CONFIG.version;
             } else if(res.code == 80011) {
                 // 关闭同屏
                 ws.close();
@@ -342,11 +347,14 @@ $(function() {
                     formData = new FormData(),
                     courseID = formWrap.attr('data-id');
 
+                    console.log($(this)[0].files[0])
+
                 var fileName = $(this)[0].files[0].name,
                     fileSize = $(this)[0].files[0].size,
                     fileTypeArr = fileName.split('.'),
-                    fileType = fileTypeArr[fileTypeArr.length - 1];
-                if(fileType !== 'ppt' && fileType !== 'pptx' && fileType !== 'mp3' && fileType !== 'jpg' && fileType !== 'jpeg' && fileType !== 'png') {
+                    fileType = $(this)[0].files[0].type;
+                    
+                if(fileType !== 'application/vnd.ms-powerpoint' && fileType !== 'application/vnd.openxmlformats-officedocument.presentationml.presentation' && fileType !== 'audio/mp3' && fileType !== 'image/jpg' && fileType !== 'image/jpeg' && fileType !== 'image/png') {
                     that.showMsg('请上传 .ppt、.pptx、.mp3、jpg、jpeg、png 格式的文件！', 'error');
                     that.reBindUpload(courseID);
                     return false;
