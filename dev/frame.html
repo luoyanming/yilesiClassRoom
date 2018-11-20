@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="renderer" content="webkit">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+        <meta http-equiv="pragma" content="no-cache">
+        <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <title>易乐思轻课堂</title>
+    </head>
+
+    <body>
+        <script>
+
+        window.addEventListener('message', function(e) {
+            a(e.data);     
+        }, false)
+
+
+        function a(data) {
+            var data = JSON.parse(data),
+                type = data.type,
+                step = data.step;
+
+            switch (type) {
+                case 1: //上一步
+                    parent.window.courseIframe.Presentation.Prev();
+                    break;
+                case 2: //下一步
+                    parent.window.courseIframe.Presentation.Next();
+                    break;
+                case 3: //获取第几步
+                    // console.log(parent.window.courseIframe.Presentation.CurrentStatus().step)
+                    parent.window.postMessage(parent.window.courseIframe.Presentation.CurrentStatus().step, '*');
+                    break;
+                case 4: //获取第几屏
+                    // parent.window.aaa = parent.window.courseIframe.Presentation.CurrentStatus().slide;
+                    break;
+                case 5: //跳转到对应ppt
+                    parent.window.courseIframe.Presentation.JumpToAnim(step, parent.window.courseIframe.Presentation.CurrentStatus().slide);
+                    break;
+            }
+        }
+              
+        </script>
+
+    </body>
+</html>

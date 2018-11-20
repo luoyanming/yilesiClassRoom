@@ -33,6 +33,7 @@
             </div>
 
             <div class="audiobox" id="audioBox" style="display: none">
+                <div class="audiotips"><span>系统检测到您正在使用的浏览器使您播放的音频默认为静音状态，</span><br /><span>您可以点击下面操作栏中的</span><img src="./static/images/icon-voice-off.png"><span>按钮解除静音状态</span></div>
                 <div class="audiobar">
                     <p class="text">暂停中...</p>
                     <div class="progress-box">
@@ -43,6 +44,7 @@
                         <div class="duration-time">00:00</div>
                     </div>
                 </div>
+                <video name="media" id="audio"></video>
             </div>
 
             <div class="canvas"></div>
@@ -129,12 +131,18 @@
     </div>
 
     <div class="toolbar" id="toolbar">
+        <a href="javascript:void(0);" class="button-voice" id="button-voice"></a>
         <a href="javascript:void(0);" class="button-refresh" id="button-refresh"></a>
         <a href="javascript:void(0);" class="button-fullscreen" id="button-fullscreen"></a>
     </div>
 
+    <!-- iframe中间页 处理ppt js调用跨域问题 -->
+    <iframe src="http://cdn-test.yilesi.cn/ppt-disk/frame/frame.html" id="tmp_iframe" name="tmp_iframe" style="display: none;"></iframe>
+    <!-- <iframe src="http://cdn.yilesi.cn/ppt-disk/frame/frame.html" id="tmp_iframe" name="tmp_iframe" style="display: none;"></iframe> -->
+
     <script src="./static/script/jquery.2.0.0.min.js"></script>
-    <script src="./static/script/exif.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>
+    <script src="./static/script/exif.min.js"></script>
     <script src="./static/script/util.js"></script>
     <script src="./static/script/course.js"></script>
 </body>

@@ -347,18 +347,26 @@ $(function() {
                     formData = new FormData(),
                     courseID = formWrap.attr('data-id');
 
-                    console.log($(this)[0].files[0])
+                    // console.log($(this)[0].files[0])
 
                 var fileName = $(this)[0].files[0].name,
                     fileSize = $(this)[0].files[0].size,
                     fileTypeArr = fileName.split('.'),
-                    fileType = $(this)[0].files[0].type;
+                    fileType = (fileTypeArr[fileTypeArr.length - 1]).toLowerCase(),
+                    typeArray = ['ppt', 'pptx', 'mp3', 'jpg', 'png', 'jpeg'];
+                
+                console.log(fileType, typeArray.indexOf(fileType))
                     
-                if(fileType !== 'application/vnd.ms-powerpoint' && fileType !== 'application/vnd.openxmlformats-officedocument.presentationml.presentation' && fileType !== 'audio/mp3' && fileType !== 'image/jpg' && fileType !== 'image/jpeg' && fileType !== 'image/png') {
+                // if(fileType !== 'application/vnd.ms-powerpoint' && fileType !== 'application/vnd.openxmlformats-officedocument.presentationml.presentation' && fileType !== 'audio/mp3' && fileType !== 'image/jpg' && fileType !== 'image/jpeg' && fileType !== 'image/png') {
+                //     that.showMsg('请上传 .ppt、.pptx、.mp3、jpg、jpeg、png 格式的文件！', 'error');
+                //     that.reBindUpload(courseID);
+                //     return false;
+                // }
+                if(typeArray.indexOf(fileType) < 0) {
                     that.showMsg('请上传 .ppt、.pptx、.mp3、jpg、jpeg、png 格式的文件！', 'error');
                     that.reBindUpload(courseID);
                     return false;
-                }
+                }  
 
                 if(fileSize > 100*1024*1024) {
                     that.$failure.find('.text').html('您上传的PPT《'+ fileName +'》大小超过限制，请上传小于100MB的PPT！');

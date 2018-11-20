@@ -49,6 +49,12 @@ var INDEX = {
             // 刷新页面，图片显示完成后显示缓存内容
             that.showSessionMask();
         });
+
+        window.addEventListener('message', function(e) {
+            console.log(e)
+            localStorage.setItem('PresentationStep', e.data)
+            console.log('PresentationStep: ', localStorage.getItem('PresentationStep'))  
+        }, false)        
     },
     UIInit: function() {
         that.audioCurrenttimeTimeout;
@@ -60,11 +66,32 @@ var INDEX = {
         that.$courseImg = $('#courseImg');
         that.$courseIframe = $('#courseIframe');
         that.$audioBox = $('#audioBox');
+        that.$audio = $('#audio');
         that.$toolbar = $('#toolbar');
+        that.$buttonVoice = $('#button-voice');
+        that.$buttonVoice.hide();
         that.$buttonRefresh = $('#button-refresh');
         that.$buttonFullscreen = $('#button-fullscreen');
         that.$bindcard = $('#bindcard');
         that.$bindlist = $('#bindlist');
+
+        that.checkBrowserAutoPlayAudio().then(autoplay => {
+            // console.log(autoplay)
+            if(autoplay) {
+                that.$buttonVoice.addClass('voice-on').show();
+                that.$audioBox.find('.audiotips').hide();
+                // document.getElementById('audio').removeAttribute('autoplay');
+                document.getElementById('audio').removeAttribute('mute');
+            } else {
+                that.$buttonVoice.removeClass('voice-on').show();
+                that.$audioBox.find('.audiotips').show();
+                // document.getElementById('audio').autoplay = 'autoplay';
+                document.getElementById('audio').muted = true;
+            }
+        })        
+
+        that.$buttonVoice.unbind('click');
+        that.$buttonVoice.on('click', that.buttonVoiceBind);
 
         that.$buttonRefresh.unbind('click');
         that.$buttonRefresh.on('click', that.buttonRefreshBind);
@@ -214,7 +241,7 @@ var INDEX = {
             switch (res.data.opType) {
                 case 1: // 开始
                     audio.play();
-                    localStorage.setItem('audioStatus', '1');
+                    localStorage.setItem('audioStatus', '1');                     
                     break;
                 case 2: // 暂停
                     audio.pause();
@@ -258,10 +285,14 @@ var INDEX = {
             // PPT动画操作
             if(res.data.pptOpType == 1) {
                 // 上一步
-                courseIframe.window.Presentation.Prev();
+                // courseIframe.window.Presentation.Prev();
+                that.usePresentation(1)
+
                 // 缓存当前第几步动画
                 setTimeout(function() {
-                    localStorage.setItem('PresentationStep', courseIframe.window.Presentation.CurrentStatus().step);
+                    // localStorage.setItem('PresentationStep', courseIframe.window.Presentation.CurrentStatus().step);
+                    // localStorage.setItem('PresentationStep', that.usePresentation(3));
+                    that.usePresentation(3)
                 }, 200);
                 
                 // 发送回执
@@ -276,10 +307,13 @@ var INDEX = {
                 });
             } else if(res.data.pptOpType == 2) {
                 // 下一步
-                courseIframe.window.Presentation.Next();
+                // courseIframe.window.Presentation.Next();
+                that.usePresentation(2)
                 // 缓存当前第几步动画
                 setTimeout(function() {
-                    localStorage.setItem('PresentationStep', courseIframe.window.Presentation.CurrentStatus().step);
+                    // localStorage.setItem('PresentationStep', courseIframe.window.Presentation.CurrentStatus().step);
+                    // localStorage.setItem('PresentationStep', that.usePresentation(3));
+                    that.usePresentation(3)
                 }, 200);
                 // 发送回执
                 that.sendMsg({
@@ -307,7 +341,9 @@ var INDEX = {
             that.$courseImg.hide();
             $('#courseIframe').remove();
             that.$audioBox.hide();
-            that.$audioBox.find('audio').remove();
+            // that.$audioBox.find('#audio').remove();
+            document.getElementById('audio').src = '';
+            that.$buttonVoice.hide();
             that.$screen.fadeIn(200);
             that.$loading.fadeOut(200);
         } else if(res.code == 80003) {
@@ -526,6 +562,8 @@ var INDEX = {
             // 如果url和缓存的不一致，表示切换课件，将播放状态置位：2
             // 1：正在播放； 2：暂停
             localStorage.setItem('audioStatus', '2');
+            that.sendAudioMsg(2);
+            that.showTipsText('暂停中...');
         }
         localStorage.setItem('picUrl', picurl);
         localStorage.setItem('htmlUrl', htmlUrl);
@@ -543,7 +581,8 @@ var INDEX = {
         that.$screen.find('.chart').remove();
         that.$screen.find('.student').remove();
         that.$screen.find('.unAnswer-student').remove();
-        that.$audioBox.find('audio').remove();
+        // that.$audioBox.find('#audio').remove();
+        document.getElementById('audio').src = '';
         that.$audioBox.hide();
         that.showLoading('正在同步显示手机屏幕，请稍候');
 
@@ -551,9 +590,11 @@ var INDEX = {
             that.zoomAndMove();
         }
 
-        
         if(htmlUrl) {
             // 加载html页面
+            that.$buttonVoice.fadeOut(200);
+
+            // var htmlUrl = 'http://b.yilesi.cn/Slide10.html';
 
             var iframe = document.createElement("iframe");
             iframe.id = 'iframe';
@@ -593,12 +634,13 @@ var INDEX = {
                 picType = picArr[picArr.length - 1];
 
             if(picType == 'mp3') {
-                // 音频
-                that.$audioBox.append('<audio src="'+ picurl +'" preload="metadata" id="audio"></audio>');
-
-                that.handleAudioEvents();
+                that.$buttonVoice.fadeIn(200);
+                document.getElementById('audio').src = picurl;
+                that.handleAudioEvents();     
             } else {
                 // 图片
+                that.$buttonVoice.fadeOut(200);
+
                 var img = new Image(),
                     pageWidth = window.innerWidth,
                     pageHeight = window.innerHeight - 42,
@@ -877,27 +919,40 @@ var INDEX = {
     showPresentation: function() {
         if(localStorage.getItem('PresentationStep')) {
             setTimeout(function() {
-                var step = parseInt(localStorage.getItem('PresentationStep')) + 1,
-                    slide = parseInt(courseIframe.window.Presentation.CurrentStatus().slide);
+                // var step = parseInt(localStorage.getItem('PresentationStep')) + 1,
+                //     slide = parseInt(courseIframe.window.Presentation.CurrentStatus().slide);
 
-                courseIframe.window.Presentation.JumpToAnim(step, slide);
+                // courseIframe.window.Presentation.JumpToAnim(step, slide);
+                
+                var step = parseInt(localStorage.getItem('PresentationStep')) + 1;
+
+                that.usePresentation(5, step);
             }, 500);
         }
+    },
+
+    // ppt调用方法
+    usePresentation: function(type, step) {
+        // $('#tmp_frame').remove();
+
+        var data = {
+            'type': type,
+            'step': step || ''
+        }     
+
+        document.getElementById('tmp_iframe').contentWindow.postMessage(JSON.stringify(data), '*');
+
+        // setTimeout(function() {
+        //     if(type == 3) {
+        //         //获取第几步
+        //         return 0;
+        //     }             
+        // }, 500)
     },
 
     // 音频事件绑定
     handleAudioEvents: function() {
         var audio = document.getElementById('audio');
-
-        // 模拟播放、暂停
-        // that.$screen.unbind('click');
-        // that.$screen.on('click', function() {
-        //     if(audio.paused) {
-        //         audio.play(); 
-        //     } else {
-        //         audio.pause();
-        //     }
-        // });
 
         // 准备就绪
         audio.onloadedmetadata = function() {
@@ -947,6 +1002,39 @@ var INDEX = {
             that.sendAudioMsg(2);
             that.showTipsText('播放结束...');
         };
+    },
+
+    // 判断浏览器是否能自动播放音频
+    checkBrowserAutoPlayAudio: function() {
+        // var audio = document.createElement('audio');
+        // audio.src = 'data:audio/mpeg;base64,/+MYxAAAAANIAAAAAExBTUUzLjk4LjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+        // document.body.appendChild(audio);
+
+        // try {
+        //     audio.play();
+        //     audio.pause();
+        //     audio.remove();
+        //     return true;
+        // } catch (e) {
+        //     console.error(e)
+        //     return false;
+        // }
+
+
+        return new Promise(resolve => {
+            let audio = document.createElement('audio');
+            audio.src = 'data:audio/mpeg;base64,/+MYxAAAAANIAAAAAExBTUUzLjk4LjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+            document.body.appendChild(audio);
+            let autoplay = true;
+            audio.play().then(() => {
+                autoplay = true;
+            }).catch(err => {
+                autoplay = false;
+            }).finally(() => {
+                audio.remove();
+                resolve(autoplay);
+            });
+        });   
     },
 
     // 发送音频状态
@@ -1081,7 +1169,7 @@ var INDEX = {
 
     // 显示题目
     showProblem: function() {
-        answerType = parseInt(localStorage.getItem('answerType'));  // 0:无题目 1:单选 2:多选 3:判断
+        var answerType = parseInt(localStorage.getItem('answerType'));  // 0:无题目 1:单选 2:多选 3:判断
                 
         if(answerType != 0) {
             // 有题目
@@ -1613,6 +1701,22 @@ var INDEX = {
             return 1;
         } else {
             return 0;
+        }
+    },
+
+    // 点击播放声音控制按钮
+    buttonVoiceBind: function() {
+        var audio = document.getElementById('audio');
+
+        if(that.$buttonVoice.hasClass('voice-on')) {
+            that.$buttonVoice.removeClass('voice-on');
+            audio.muted = true;
+            that.$audioBox.find('.audiotips').fadeIn(200);
+        } else {
+            var audio = document.getElementById('audio');
+            that.$buttonVoice.addClass('voice-on');
+            that.$audioBox.find('.audiotips').fadeOut(200);
+            audio.muted = false;
         }
     },
 

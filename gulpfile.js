@@ -6,6 +6,7 @@ var dest = 'dist',
     header = require('gulp-header'),
     plumber = require('gulp-plumber'),
     uglify = require('gulp-uglify'),
+    gulpBabel = require('gulp-babel'),
     livereload = require('gulp-livereload'),
     connect = require('gulp-connect'),
     concat = require('gulp-concat'),
@@ -44,8 +45,12 @@ gulp.task('css', function(){
 
 gulp.task('uglifyjs', function() {
     // return gulp.src(['dev/**/*.js','!dev/**/*.min.js'])
-    return gulp.src(['dev/**/*.js','!dev/**/*.min.js','!dev/**/util.js'])
+    return gulp.src(['dev/**/*.js','!dev/**/*.min.js'])
             .pipe(plumber({errorHandler: notify.onError('Error: <%= error.message %>')}))
+            // .pipe(babel({
+            //     presets: ['env']
+            // }))
+            .pipe(gulpBabel())            
             .pipe(uglify())
             .pipe(header(notes, { pkg : pkg } ))
             .pipe(rev())
@@ -57,7 +62,7 @@ gulp.task('uglifyjs', function() {
 
 gulp.task('minjs', function(){
     // return gulp.src('dev/**/*.min.js')
-    return gulp.src(['dev/**/*.min.js','dev/**/util.js'])
+    return gulp.src(['dev/**/*.min.js'])
             .pipe(plumber({errorHandler: notify.onError('Error: <%= error.message %>')}))
             .pipe(gulp.dest(dest))
             .pipe(livereload());
@@ -65,6 +70,12 @@ gulp.task('minjs', function(){
 
 gulp.task('images', function(){
     return gulp.src('dev/**/*.{png,jpg,gif,svg,ico}')
+            .pipe(gulp.dest(dest))
+            .pipe(livereload());
+});
+
+gulp.task('mp3', function(){
+    return gulp.src('dev/**/*.mp3')
             .pipe(gulp.dest(dest))
             .pipe(livereload());
 });
@@ -109,9 +120,9 @@ gulp.task('watch', function() {
         'rev/**/*.json',
         'dev/**/*.html',
         'dev/**/*.scss',
-        'dev/**/*.{png,jpg,gif,svg,ico}',
+        'dev/**/*.{png,jpg,gif,svg,ico,mp3}',
         'dev/**/*.js'
         ], ['change']);
 });
 
-gulp.task('server', ['sass', 'css', 'uglifyjs', 'minjs', 'images', 'rev', 'webserver', 'watch']);
+gulp.task('server', ['sass', 'css', 'uglifyjs', 'minjs', 'images', 'mp3', 'rev', 'webserver', 'watch']);

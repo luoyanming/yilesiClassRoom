@@ -73,10 +73,28 @@
         }
 
         .audiobox{
-            @include position(absolute, 10, 0, 0, 0, 0);
+            @include position(absolute, 110, 0, 0, 0, 0);
             -webkit-transform-origin: left top;
                     transform-origin: left top;
             @include backgroundImage('../images/icon-audio.png', no-repeat, center, center, 628px, 128px);
+
+            .audiotips{
+                @include position(absolute, 10, 65%, 0, none, 0);
+                display: none;
+                text-align: center;
+
+                span{
+                    font-size: 18px;
+                    line-height: 28px;
+                    color: #FFF;
+                }
+
+                img{
+                    display: inline;
+                    width: 30px;
+                    vertical-align: top;
+                }
+            }
 
             .audiobar{
                 @include position(absolute, 10, none, none, 16px, 50%);
@@ -461,12 +479,21 @@
     overflow: hidden;
 
     .button-refresh,
-    .button-fullscreen{
+    .button-fullscreen,
+    .button-voice{
         display: inline-block;
-        width: 30px;
-        height: 30px;
-        margin-top: 6px;
+        width: 42px;
+        height: 42px;
+        // margin-top: 6px;
     }
+
+    .button-voice{
+        margin-right: 60px;
+        @include backgroundImage('../images/icon-voice-off.png', no-repeat, center, center, 100%, 100%);
+    } 
+    .button-voice.voice-on{
+        @include backgroundImage('../images/icon-voice-on.png', no-repeat, center, center, 100%, 100%);
+    }        
 
     .button-refresh{
         @include backgroundImage('../images/course-refresh.png', no-repeat, center, center, 100%, 100%);
