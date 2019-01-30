@@ -273,7 +273,7 @@ $(function() {
                     if(res.data.list.length == 0) {
                         that.createOnlyone();
                     } else {
-                        that.createList(res.data.list);
+                        that.createList(res.data.list, res.data.notEndCourseIds);
                     }
                 },
                 error: function() {
@@ -291,7 +291,7 @@ $(function() {
         },
 
         // 显示课程列表
-        createList: function(dataList) {
+        createList: function(dataList, noContainIds) {
             var temp = '';
             temp += '<ul>';
             temp += '<li class="list-item">';
@@ -316,6 +316,12 @@ $(function() {
                 temp += '<div class="file-wrap">';
                 temp += that.formUI(dataList[i].id);
                 temp += '</div>';
+
+                    console.log(0)
+                if(noContainIds.indexOf(dataList[i].id) > -1) {
+                    console.log(1)
+                    temp += that.loadUI(dataList[i].id);
+                }
                 temp += '</div>';
                 if(dataList[i].name.length > 8) {
                     temp += '<p class="title">'+ dataList[i].name.substring(0, 8) +'...</p>';

@@ -410,13 +410,12 @@ var INDEX = {
             that.showBindCard();
         } else if(res.code == 80014) {
             // 建班查看学生列表
-            localStorage.setItem('sessionType', '81');
+            localStorage.setItem('sessionType', '80');
             localStorage.setItem('bindStudentData', JSON.stringify(res.data));
             that.showBindStudent();
         } else if(res.code == 80015) {
             // 关闭学生列表
             that.$bindcard.removeClass('bindcard-active').hide();
-            that.$bindlist.hide();
             that.$connection.fadeIn(300);
         } else if(res.code == 80016) {
             // 显示已绑学生人数
@@ -1443,8 +1442,9 @@ var INDEX = {
         that.$bindcard.show();
 
         var cardH = that.$bindcard.height(),
-            cardBoxH = that.$bindcard.find('.bindcard-box').height(),
-            scale = cardH/cardBoxH;
+            scale = cardH/1200;
+            // cardBoxH = that.$bindcard.find('.bindcard-box').height(),
+            // scale = cardH/cardBoxH;
 
         that.$bindcard.find('.bindcard-box').css({
             '-webkit-transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')',
@@ -1453,14 +1453,21 @@ var INDEX = {
                     'transform': 'translate3d(-50%, -50%, 0) scale('+ scale +')'
         });
 
-        that.$connection.hide();
-        that.$bindlist.hide();
-        that.$bindcard.addClass('bindcard-active').fadeIn(300);
+
+        window.showBindStudentXF = setInterval(function() {
+            that.showBindStudent();
+        }, 30);
     },
 
     // 显示绑卡学生列表
     showBindStudent: function() {
-        var data = JSON.parse(localStorage.getItem('bindStudentData'));
+        var studentData = localStorage.getItem('bindStudentData');
+
+        if(!studentData) {
+            return false;
+        }
+
+        var data = JSON.parse(studentData);
 
         if(data.studentList && data.studentList.length > 0) {
             var temp = '';
@@ -1487,8 +1494,11 @@ var INDEX = {
             that.$bindlist.find('ul').html('<li class="no-data">暂无绑定的学生</li>');
         }
 
-        that.$bindcard.removeClass('bindcard-active').hide();
-        that.$bindlist.fadeIn(300);
+        clearInterval(window.showBindStudentXF);
+
+
+        that.$connection.hide();
+        that.$bindcard.addClass('bindcard-active').fadeIn(300);
     },
 
     // loading
