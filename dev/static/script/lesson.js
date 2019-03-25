@@ -359,10 +359,9 @@ $(function() {
                     fileSize = $(this)[0].files[0].size,
                     fileTypeArr = fileName.split('.'),
                     fileType = (fileTypeArr[fileTypeArr.length - 1]).toLowerCase(),
+                    fileTitle = fileName.substring(0, fileName.length - fileType.length - 1),
                     typeArray = ['ppt', 'pptx', 'mp3', 'jpg', 'png', 'jpeg'];
                 
-                console.log(fileType, typeArray.indexOf(fileType))
-                    
                 // if(fileType !== 'application/vnd.ms-powerpoint' && fileType !== 'application/vnd.openxmlformats-officedocument.presentationml.presentation' && fileType !== 'audio/mp3' && fileType !== 'image/jpg' && fileType !== 'image/jpeg' && fileType !== 'image/png') {
                 //     that.showMsg('请上传 .ppt、.pptx、.mp3、jpg、jpeg、png 格式的文件！', 'error');
                 //     that.reBindUpload(courseID);
@@ -392,7 +391,7 @@ $(function() {
                     formData.append('tempCourseId', courseID);
                     formData.append('courseId', courseID);
 
-                    that.uploadppt(0, courseID, fileTypeArr[0], formData);
+                    that.uploadppt(0, courseID, fileTitle, formData);
                 } else {
                     formData.append('tempCourseId', 0);
 
@@ -410,7 +409,7 @@ $(function() {
                             if(res.code == 0) {
                                 formData.append('courseId', res.data.courseId);
 
-                                that.uploadppt(1, res.data.courseId, fileTypeArr[0], formData);
+                                that.uploadppt(1, res.data.courseId, fileTitle, formData);
                             } else {
                                 that.showMsg(res.errorInfo, 'error');
                             }
