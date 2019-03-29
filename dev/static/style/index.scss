@@ -247,6 +247,16 @@
         font-size: 12px;
         color: #FFF;
         line-height: 1.5;
+
+        .link{
+            color: #FFF;
+            cursor: pointer;
+
+            &:hover{
+                color: #38A0FF;
+                text-decoration: underline;
+            }
+        }
     }
 }
 
