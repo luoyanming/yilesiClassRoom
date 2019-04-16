@@ -20,45 +20,50 @@
         @include position(absolute, 3, 50%, none, none, 50%);
         margin: -270px 0 0 -210px;
         width: 420px;
-        height: 540px;
+        height: 580px;
         background: #FFF;
         border-radius: 5px;
         overflow: hidden;
         @include boxShadow(0, 0, 10px, rgba(0,0,0,.1));
 
         .button-toggle{
-            @include position(absolute, 10, 0, 0, none, none);
-            width: 100px;
-            height: 100px;
-            // opacity: 0;
-            // @include transition(all, .2s, ease-in-out, 0);
+            padding-top: 4px;
+            background: rgba(216,216,216,0.26);
+            font-size: 0;
+            text-align: center;
+            cursor: pointer;
 
-            &.button-class{
-                @include backgroundImage('../images/icon-button-class.png', no-repeat, center, center, 100%, 100%);
+            a{
+                display: inline-block;
+                font-size: 18px;
+                color: #888888;
+                line-height: 58px;
+                border-bottom: 2px solid transparent;
             }
 
-            &.button-lesson{
-                @include backgroundImage('../images/icon-button-lesson.png', no-repeat, center, center, 100%, 100%);
-            }
+            &.button-toggle-active{
+                background: #FFF;
 
-            // &.button-toggle-active{
-            //     opacity: 1;
-            //     @include transition(all, .3s, ease-in-out, 0);
-            // }
+                a{
+                    font-size: 20px;
+                    color: #38A0FF;
+                    border-bottom: 2px solid #38A0FF;
+                }
+            }
         }
 
         .wrap{
             position: relative;
-            width: 240px;
-            height: 240px;
-            margin: 57px auto 0;
+            width: 280px;
+            height: 280px;
+            margin: 28px auto 0;
             overflow: hidden;
 
             .qrcode-mask{
                 @include position(absolute, 5, 50%, none, none, 50%);
-                margin: -20px 0 0 -20px;
-                width: 40px;
-                height: 40px;
+                margin: -30px 0 0 -30px;
+                width: 60px;
+                height: 60px;
 
                 &.qrcode-mask-class{
                     @include backgroundImage('../images/qrcode-class.png', no-repeat, center, center, 100%, 100%);
@@ -130,7 +135,7 @@
             line-height: 1.5;
 
             &.text-deep{
-                margin-top: 30px;
+                margin-top: 28px;
                 color: #333;
             }
 
@@ -141,7 +146,8 @@
 
         .text-box{
             position: relative;
-            margin-top: 23px;
+            height: 24px;
+            margin-top: 10px;
 
             .text-light{
                 @include position(absolute, 3, 0, 0, none, 0);
@@ -175,7 +181,7 @@
         }
 
         .screen-code{
-            margin: 77px auto 0;
+            margin: 22px auto 0;
             font-size: 0;
             text-align: center;
 

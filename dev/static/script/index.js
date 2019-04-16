@@ -56,12 +56,12 @@ var INDEX = {
         }
 
         if(that.flag == 'class') {
-            that.$buttonLesson.fadeIn(200);
-            that.$buttonClass.fadeOut(200);
+            that.$buttonLesson.removeClass('button-toggle-active');
+            that.$buttonClass.addClass('button-toggle-active');
             that.$textClass.parent().removeClass('text-box-active');
         } else if(that.flag == 'lesson') {
-            that.$buttonLesson.fadeOut(200);
-            that.$buttonClass.fadeIn(200);
+            that.$buttonLesson.addClass('button-toggle-active');
+            that.$buttonClass.removeClass('button-toggle-active');
             that.$textClass.parent().addClass('text-box-active');
         }
 
@@ -216,8 +216,8 @@ var INDEX = {
 
         // 上课按钮
         that.$buttonClass.on('click', function() {
-            that.$buttonLesson.fadeIn(200);
-            that.$buttonClass.fadeOut(200);
+            that.$buttonLesson.removeClass('button-toggle-active');
+            that.$buttonClass.addClass('button-toggle-active');
             that.$textClass.parent().removeClass('text-box-active');
             that.flag = 'class';
 
@@ -239,8 +239,8 @@ var INDEX = {
 
         // 备课按钮
         that.$buttonLesson.on('click', function() {
-            that.$buttonLesson.fadeOut(200);
-            that.$buttonClass.fadeIn(200);
+            that.$buttonLesson.addClass('button-toggle-active');
+            that.$buttonClass.removeClass('button-toggle-active');
             that.$textClass.parent().addClass('text-box-active');
             that.flag = 'lesson';
 

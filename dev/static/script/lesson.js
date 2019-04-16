@@ -360,7 +360,7 @@ $(function() {
                     fileTypeArr = fileName.split('.'),
                     fileType = (fileTypeArr[fileTypeArr.length - 1]).toLowerCase(),
                     fileTitle = fileName.substring(0, fileName.length - fileType.length - 1),
-                    typeArray = ['ppt', 'pptx', 'mp3', 'jpg', 'png', 'jpeg'];
+                    typeArray = ['ppt', 'pptx', 'pdf', 'mp3', 'jpg', 'png', 'jpeg'];
                 
                 // if(fileType !== 'application/vnd.ms-powerpoint' && fileType !== 'application/vnd.openxmlformats-officedocument.presentationml.presentation' && fileType !== 'audio/mp3' && fileType !== 'image/jpg' && fileType !== 'image/jpeg' && fileType !== 'image/png') {
                 //     that.showMsg('请上传 .ppt、.pptx、.mp3、jpg、jpeg、png 格式的文件！', 'error');
@@ -368,7 +368,7 @@ $(function() {
                 //     return false;
                 // }
                 if(typeArray.indexOf(fileType) < 0) {
-                    that.showMsg('请上传 .ppt、.pptx、.mp3、jpg、jpeg、png 格式的文件！', 'error');
+                    that.showMsg('请上传 .ppt、.pptx、.pdf、.mp3、jpg、jpeg、png 格式的文件！', 'error');
                     that.reBindUpload(courseID);
                     return false;
                 }  
