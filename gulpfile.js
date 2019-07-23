@@ -75,7 +75,7 @@ gulp.task('images', function(){
 });
 
 gulp.task('mp3', function(){
-    return gulp.src('dev/**/*.mp3')
+    return gulp.src('dev/**/*.{mp3,mp4}')
             .pipe(gulp.dest(dest))
             .pipe(livereload());
 });

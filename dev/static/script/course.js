@@ -22,7 +22,7 @@ $(function() {
 
             that.$connection.hide();
             that.$screen.hide();
-            that.showLoading('正在连接易乐思课堂...');
+            that.showLoading('正在连接爱智慧岛课堂...');
 
             that.sid = localStorage.getItem('sid');
             that.token = localStorage.getItem('token');
@@ -110,7 +110,7 @@ $(function() {
 
             //连接发生错误的回调方法
             // ws.onerror = function () {
-            //     console.log("连接易乐思课堂失败，点击确定重连");
+            //     console.log("连接爱智慧岛课堂失败，点击确定重连");
             //     ws = null;
             //     ws.close();
             //     that.webSocketInit();
@@ -144,9 +144,14 @@ $(function() {
 
                 ws.close();
                 ws = null;
-                that.$screen.hide();
-                that.showLoading('连接已断开，正在重新连接，请稍候');
-                that.webSocketInit();
+
+                if(that.closeType == 'tick') {
+                    // 被踢、退出同屏
+                } else {
+                    that.$screen.hide();
+                    that.showLoading('连接已断开，正在重新连接，请稍候');
+                    that.webSocketInit();
+                }
             }
 
             //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口。
@@ -232,6 +237,7 @@ $(function() {
                 that.heartCount -= 1;
             } else if(res.code == 10007) {
                 // 账号在其它地方登陆，当前页面被踢下线
+                that.closeType = 'tick';
                 ws.close();
                 alert('您的账号已在其它地点登录，将被强制下线！');
                 location.href = './index.html?from=class&v=' + CONFIG.version;
@@ -402,6 +408,7 @@ $(function() {
                 that.showAnswerCharts();
             } else if(res.code == 80011) {
                 // 关闭同屏
+                that.closeType = 'tick';
                 ws.close();
                 location.href = './index.html?from=class&v=' + CONFIG.version;
             } else if(res.code == 80013) {
@@ -1280,16 +1287,17 @@ $(function() {
                 optionsArr[index].bgcolor = "#1EC51D";
             } else if(info.answerType == 2) {
                 // 多选
-                titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '答对', '误按', '未答题'];
+                // titlesArr = ['A', 'B', 'C', 'D', 'E', 'F', '答对', '误按', '未答题'];
+                titlesArr = ['答对', '答错', '未答题'];
                 optionsArr = [
-                    { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
-                    { 'value': info.numB, 'width': '', bgcolor: '#FFFD38' },
-                    { 'value': info.numC, 'width': '', bgcolor: '#D71616' },
-                    { 'value': info.numD, 'width': '', bgcolor: '#D68A16' },
-                    { 'value': info.numE, 'width': '', bgcolor: '#7A38FF' },
-                    { 'value': info.numF, 'width': '', bgcolor: '#C238FF' },
+                    // { 'value': info.numA, 'width': '', bgcolor: '#38A0FF' },
+                    // { 'value': info.numB, 'width': '', bgcolor: '#FFFD38' },
+                    // { 'value': info.numC, 'width': '', bgcolor: '#D71616' },
+                    // { 'value': info.numD, 'width': '', bgcolor: '#D68A16' },
+                    // { 'value': info.numE, 'width': '', bgcolor: '#7A38FF' },
+                    // { 'value': info.numF, 'width': '', bgcolor: '#C238FF' },
                     { 'value': info.rightNum, 'width': '', bgcolor: '#1EC51D' },
-                    { 'value': info.wrongNum, 'width': '', bgcolor: '#D9D9D9' },
+                    { 'value': info.totalWrongNum, 'width': '', bgcolor: '#D9D9D9' },
                     { 'value': info.giveupNum, 'width': '', bgcolor: '#D9D9D9' }
                 ];
             }
@@ -1307,7 +1315,7 @@ $(function() {
             var str = '';
             str += '<div class="chart">';
             str += '<div class="chart-box flex-h">';
-            str += '<div class="time">答题时间：00:'+ that.transMinute(Math.floor(info.costTime/60)) +':'+ that.transSecond(info.costTime%60) +'</div>';
+            str += '<div class="time">答题时间：00:'+ that.transMinute(Math.floor(info.costTime/60)) +':'+ that.transSecond(info.costTime%60) +'&nbsp;&nbsp;&nbsp;&nbsp;答案：'+ info.answer +'</div>';
             str += '<div class="titles">';
             for(var j = 0; j < titlesArr.length; j++) {
                 str += '<p class="titles-item">'+ titlesArr[j] +'</p>';
@@ -1341,7 +1349,10 @@ $(function() {
                     text = "选择✓的学生";
                     break;
                 case 2:
-                    text = "答对(" + data.rightAnswer + ")的学生";
+                    text = "选择" + data.rightAnswer + "的学生";
+                    break;
+                case 3:
+                    text = "答错的学生";
                     break;
                 case 4:
                     text = "未答题的学生";
@@ -1357,12 +1368,17 @@ $(function() {
             str += '<div class="student">';
             str += '<div class="student-box">';
             str += "<h2>" + text + "</h2>";
+            str += '<div class="s-list">';
             for(var i = 0; i < data.studentList.length; i++) {
                 if(data.studentList[i].name) {
                     if(data.studentList[i].status == 0) {
                         str += '<p>'+ data.studentList[i].name +'</p>';
                     } else {
-                        str += '<p class="grey">'+ data.studentList[i].name +'</p>';
+                        if(data.answerType == 3) {
+                            str += '<p class="grey ">'+ data.studentList[i].name +'<br /><span class="answear">'+ data.studentList[i].answer +'<span></p>';
+                        } else {
+                            str += '<p class="grey">'+ data.studentList[i].name +'</p>';
+                        }
                     }
                 } else {
                     if(data.studentList[i].status == 0) {
@@ -1372,6 +1388,7 @@ $(function() {
                     }
                 }
             }
+            str += '</div>';
             str += '</div>';
             str += '</div>';
 

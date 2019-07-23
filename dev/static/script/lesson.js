@@ -317,9 +317,7 @@ $(function() {
                 temp += that.formUI(dataList[i].id);
                 temp += '</div>';
 
-                    console.log(0)
                 if(noContainIds.indexOf(dataList[i].id) > -1) {
-                    console.log(1)
                     temp += that.loadUI(dataList[i].id);
                 }
                 temp += '</div>';
