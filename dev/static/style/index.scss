@@ -10,7 +10,7 @@
     background-size: cover;
 
     .logo{
-        @include position(absolute, 3, 60px, none, none, 60px);
+        @include position(absolute, 3, 50px, none, none, 60px);
         width: 156px;
         height: 60px;
         @include backgroundImage('../images/logo.png', no-repeat, center, center, 100%, 100%);
