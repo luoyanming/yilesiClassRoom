@@ -1,1 +1,1 @@
-scp -r /Users/luoym/Desktop/renhe/zanfuwu/yilesiClassroom/dist/* root@118.31.22.134:/home/yls-classroom/elearns_class/classroom-www/assets/
+scp -r /Users/luoym/Desktop/renhe/zanfuwu/yilesiClassroom/dist/* root@datibao.yilesi.cn:/home/yls-classroom/elearns_class/classroom-www/assets/
