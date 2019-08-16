@@ -1,5 +1,5 @@
 window.CONFIG = {
-    version: '2.5.0',
+    version: '2.6.0',
     // ######### course.html  id="tmp_iframe" 需要手动修改 src
     
     
@@ -15,6 +15,12 @@ window.CONFIG = {
     // online: '118.31.22.134:8095/ws',
     // apiOnline: 'http://ctest.izhihuidao.com'
 
-    online: '118.31.22.134:8091/ws',
-    apiOnline: 'http://c.izhihuidao.com'
+    // online: '118.31.22.134:8091/ws',
+    // apiOnline: 'http://c.izhihuidao.com'
+
+    // online: 'aide.izouban.cn:8091/ws',
+    // apiOnline: 'http://classroomshixiaozhu.yilesi.cn/privateapi'
+
+    online: 'aide.izouban.cn:8091/ws',
+    apiOnline: 'http://aide.izouban.cn'
 };

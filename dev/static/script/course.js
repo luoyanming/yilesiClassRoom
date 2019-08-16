@@ -22,7 +22,7 @@ var INDEX = {
 
         that.$connection.hide();
         that.$screen.hide();
-        that.showLoading('正在连接爱智慧岛课堂...');
+        that.showLoading('正在连接师小助...');
 
         that.sid = localStorage.getItem('sid');
         that.token = localStorage.getItem('token');
