@@ -5,26 +5,32 @@
 // ==============================================
 .container{
     position: relative;
+    margin: 30px;
     height: 100%;
-    background: url('../images/bg.jpg') no-repeat center center;
-    background-size: cover;
+    background: url('../images/bg.jpg') no-repeat left center;
+    background-size: 60%;
 
     .logo{
-        @include position(absolute, 3, 50px, none, none, 60px);
-        width: 156px;
-        height: 60px;
-        @include backgroundImage('../images/logo.png', no-repeat, center, center, 100%, 100%);
+        @include position(absolute, 3, 30px, 60px, none, none);
+        width: 209px;
+        height: 50px;
+        @include backgroundImage('../images/logo.png', no-repeat, left, center, 50px, 50px);
+        font-size: 24px;
+        font-family: "JSaoEr";
+        color: #d81e06;
+        text-indent: 60px;
+        line-height: 50px;
     }
 
     .qrCode-box{
-        @include position(absolute, 3, 50%, none, none, 50%);
-        margin: -270px 0 0 -210px;
+        @include position(absolute, 3, 50%, 5%, none, none);
+        margin: -200px 0 0 0;
         width: 420px;
-        height: 580px;
+        height: 400px;
         background: #FFF;
         border-radius: 5px;
         overflow: hidden;
-        @include boxShadow(0, 0, 10px, rgba(0,0,0,.1));
+        @include boxShadow(0, 0, 10px, rgba(0,0,0,.3));
 
         .button-toggle{
             padding-top: 4px;

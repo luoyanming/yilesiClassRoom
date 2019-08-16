@@ -15,6 +15,9 @@ window.CONFIG = {
     // online: '118.31.22.134:8095/ws',
     // apiOnline: 'http://ctest.izhihuidao.com'
 
-    online: '118.31.22.134:8091/ws',
-    apiOnline: 'http://c.izhihuidao.com'
+    // online: '118.31.22.134:8091/ws',
+    // apiOnline: 'http://c.izhihuidao.com'
+
+    online: 'datibao.yilesi.cn:8091/ws',
+    apiOnline: 'http://datibao.yilesi.cn/'
 };
