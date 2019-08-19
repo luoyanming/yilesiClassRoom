@@ -21,6 +21,6 @@ window.CONFIG = {
     // online: 'aide.izouban.cn:8091/ws',
     // apiOnline: 'http://classroomshixiaozhu.yilesi.cn/privateapi'
 
-    online: 'aide.izouban.cn:8091/ws',
+    online: 'aide.izouban.cn:8095/ws',
     apiOnline: 'http://aide.izouban.cn'
 };
