@@ -1254,6 +1254,8 @@ var INDEX = {
             titlesArr = [],
             optionsArr = [];
 
+        console.log(info)
+
         if (info.answerType == 3) {
             // 判断题
             titlesArr = ["✓", "✕", '误按', '未答题'];
@@ -1261,29 +1263,35 @@ var INDEX = {
                 {
                     'value': info.numTrue,
                     'width': '',
-                    bgcolor: '#38A0FF'
+                    'bgcolor': '#38A0FF',
+                    'percent': info.truePercentage
                 },
                 {
                     'value': info.numFalse,
                     'width': '',
-                    bgcolor: '#FFFD38'
+                    'bgcolor': '#FFFD38',
+                    'percent': info.falsePercentage
                 },
                 {
                     'value': info.wrongNum,
                     'width': '',
-                    bgcolor: '#D9D9D9'
+                    'bgcolor': '#D9D9D9',
+                    'percent': info.wrongPercentage
                 },
                 {
                     'value': info.giveupNum,
                     'width': '',
-                    bgcolor: '#D9D9D9'
+                    'bgcolor': '#D9D9D9',
+                    'percent': info.giveupPercentage
                 }
             ];
 
             if (info.answer == '0' || info.answer == 0) {
                 optionsArr[1].bgcolor = '#1EC51D';
+                info.answer = "✕";
             } else if (info.answer == '1' || info.answer == 1) {
                 optionsArr[0].bgcolor = '#1EC51D';
+                info.answer = "✓";
             }
         } else if (info.answerType == 1) {
             // 单选
@@ -1292,42 +1300,50 @@ var INDEX = {
                 {
                     'value': info.numA,
                     'width': '',
-                    bgcolor: '#38A0FF'
+                    'bgcolor': '#38A0FF',
+                    'percent': info.aPercentage
                 },
                 {
                     'value': info.numB,
                     'width': '',
-                    bgcolor: '#FFFD38'
+                    'bgcolor': '#FFFD38',
+                    'percent': info.bPercentage
                 },
                 {
                     'value': info.numC,
                     'width': '',
-                    bgcolor: '#D71616'
+                    'bgcolor': '#D71616',
+                    'percent': info.cPercentage
                 },
                 {
                     'value': info.numD,
                     'width': '',
-                    bgcolor: '#D68A16'
+                    'bgcolor': '#D68A16',
+                    'percent': info.dPercentage
                 },
                 {
                     'value': info.numE,
                     'width': '',
-                    bgcolor: '#7A38FF'
+                    'bgcolor': '#7A38FF',
+                    'percent': info.ePercentage
                 },
                 {
                     'value': info.numF,
                     'width': '',
-                    bgcolor: '#C238FF'
+                    'bgcolor': '#C238FF',
+                    'percent': info.fPercentage
                 },
                 {
                     'value': info.wrongNum,
                     'width': '',
-                    bgcolor: '#D9D9D9'
+                    'bgcolor': '#D9D9D9',
+                    'percent': info.wrongPercentage
                 },
                 {
                     'value': info.giveupNum,
                     'width': '',
-                    bgcolor: '#D9D9D9'
+                    'bgcolor': '#D9D9D9',
+                    'percent': info.giveupPercentage
                 }
             ];
 
@@ -1347,17 +1363,20 @@ var INDEX = {
                 {
                     'value': info.rightNum,
                     'width': '',
-                    bgcolor: '#1EC51D'
+                    'bgcolor': '#1EC51D',
+                    'percent': info.rightPercentage
                 },
                 {
                     'value': info.totalWrongNum,
                     'width': '',
-                    bgcolor: '#D9D9D9'
+                    'bgcolor': '#D9D9D9',
+                    'percent': info.totalWrongPercentage
                 },
                 {
                     'value': info.giveupNum,
                     'width': '',
-                    bgcolor: '#D9D9D9'
+                    'bgcolor': '#D9D9D9',
+                    'percent': info.giveupPercentage
                 }
             ];
         }
@@ -1369,7 +1388,7 @@ var INDEX = {
         compareArr.sort(that.compare);
         var max = compareArr.pop();
         for (var i = 0; i < optionsArr.length; i++) {
-            optionsArr[i].width = parseInt(optionsArr[i].value) / parseInt(max) * 90;
+            optionsArr[i].width = parseInt(optionsArr[i].value) / parseInt(max) * 75;
         }
 
         var str = '';
@@ -1385,7 +1404,7 @@ var INDEX = {
         for (var k = 0; k < optionsArr.length; k++) {
             str += '<div class="options-item flex-h">';
             str += '<p class="color-line" style="width: ' + optionsArr[k].width + '%; background: ' + optionsArr[k].bgcolor + ';"></p>';
-            str += '<p class="text">' + optionsArr[k].value + '人</p>';
+            str += '<p class="text">' + optionsArr[k].value + '人/'+ optionsArr[k].percent +'</p>';
             str += '</div>';
         }
         str += '</div>';

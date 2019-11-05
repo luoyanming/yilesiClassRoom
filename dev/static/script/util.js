@@ -1,5 +1,5 @@
 window.CONFIG = {
-    version: '2.5.0',
+    version: '2.7.0',
     // ######### course.html  id="tmp_iframe" 需要手动修改 src
     
     
