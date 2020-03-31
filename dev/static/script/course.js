@@ -365,6 +365,7 @@ var INDEX = {
             if (res.data.picHtmlArray) {
                 // 初次上课清除缓存
                 this.clearLocalStorage();
+                localStorage.setItem('recordType', res.data.recordType);
 
                 that.showImage(res.data.answerType, res.data.isAnswer, res.data.picUrl, res.data.htmlUrl, res.data.picHtmlArray);
 
@@ -1183,9 +1184,17 @@ var INDEX = {
             if (localStorage.getItem('isAnswer')) {
                 // 已答题
                 var str = '';
-                str += '<div class="state-after">';
-                str += '<div class="button-detail">查看结果</div>';
-                str += '<p class="text">重新答题</p>';
+                if(localStorage.getItem('recordType') != 1) { 
+                    str += '<div class="state-after">';
+                } else {
+                    str += '<div class="state-after" style="height: 104px;">';
+                }
+                if(localStorage.getItem('recordType') != 1) { 
+                    str += '<div class="button-detail">查看结果</div>';
+                    str += '<p class="text">重新答题</p>';
+                } else {
+                    str += '<div class="button-detail">重新答题</div>';
+                }
                 str += '</div>';
 
                 that.$screen.append(str);
@@ -1220,9 +1229,15 @@ var INDEX = {
                 seconds: '00'
             }
         }
-        str += '<div class="state-doing">';
+        if(localStorage.getItem('recordType') != 1) { 
+            str += '<div class="state-doing">';
+        } else {
+            str += '<div class="state-doing" style="height: 104px;">';
+        }
         str += '<p class="text text-time">答题时间：00:' + time.minutes + ':' + time.seconds + '</p>';
-        str += '<p class="text text-number clearfix"><span class="number">答题人数：' + localStorage.getItem('answerNum') + '人</span><span class="btn-unAnswer">未答</span></p>';
+        if(localStorage.getItem('recordType') != 1) { 
+            str += '<p class="text text-number clearfix"><span class="number">答题人数：' + localStorage.getItem('answerNum') + '人</span><span class="btn-unAnswer">未答</span></p>';
+        }
         str += '<div class="button-stop">结束答题</div>';
         str += '</div>';
 
@@ -1234,9 +1249,17 @@ var INDEX = {
     // 结束答题
     endAnswer: function() {
         var str = '';
-        str += '<div class="state-after">';
-        str += '<div class="button-detail">查看结果</div>';
-        str += '<p class="text">重新答题</p>';
+        if(localStorage.getItem('recordType') != 1) { 
+            str += '<div class="state-after">';
+        } else {
+            str += '<div class="state-after" style="height: 104px;">';
+        }
+        if(localStorage.getItem('recordType') != 1) { 
+            str += '<div class="button-detail">查看结果</div>';
+            str += '<p class="text">重新答题</p>';
+        } else {
+            str += '<div class="button-detail">重新答题</div>';
+        }
         str += '</div>';
 
         // 清除定时器
